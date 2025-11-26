@@ -1,11 +1,10 @@
 <script>
   import "../app.css";
+  import Nav from "./lib/components/Nav.svelte";
   let { children } = $props();
 </script>
 
-<header class="p-4 bg-gray-100">
-  <h1 class="text-lg font-semibold">My New Svelte App</h1>
-</header>
+<Nav/>
 
 <main class="p-4">
   {@render children?.()}
