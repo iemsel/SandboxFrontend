@@ -1,9 +1,9 @@
 <script>
-  import "../app.css";
+  import '../app.css';
   let { children } = $props();
 </script>
 
-<header class="p-4 bg-gray-100">
+<header class="bg-gray-100 p-4">
   <h1 class="text-lg font-semibold">My New Svelte App</h1>
 </header>
 

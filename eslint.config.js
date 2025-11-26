@@ -1,4 +1,5 @@
 import prettier from 'eslint-config-prettier';
+import pluginPrettier from 'eslint-plugin-prettier';
 import { fileURLToPath } from 'node:url';
 import { includeIgnoreFile } from '@eslint/compat';
 import js from '@eslint/js';
@@ -10,18 +11,28 @@ const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
-	includeIgnoreFile(gitignorePath),
-	js.configs.recommended,
-	...svelte.configs.recommended,
-	prettier,
-	...svelte.configs.prettier,
-	{
-		languageOptions: {
-			globals: { ...globals.browser, ...globals.node }
-		}
-	},
-	{
-		files: ['**/*.svelte', '**/*.svelte.js'],
-		languageOptions: { parserOptions: { svelteConfig } }
-	}
+  includeIgnoreFile(gitignorePath),
+  js.configs.recommended,
+  ...svelte.configs.recommended,
+  {
+    plugins: { prettier: pluginPrettier },
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+    },
+  },
+  ...svelte.configs.prettier,
+  prettier,
+  {
+    files: ['**/*.svelte', '**/*.svelte.js'],
+    languageOptions: { parserOptions: { svelteConfig } },
+  },
+  {
+    files: ['**/*.js', '**/*.svelte.js'],
+    rules: {
+      'prettier/prettier': 'error',
+      quotes: ['error', 'single'],
+      semi: ['error', 'always'],
+      complexity: ['warn', 8],
+    },
+  },
 ];
