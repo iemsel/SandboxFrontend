@@ -2,7 +2,8 @@
 	export let user = "U";
 </script>
 
-<nav class="w-full bg-green-600 text-white px-6 py-4 flex items-center justify-between">
+<nav class="w-full text-white px-6 py-4 flex items-center justify-between
+      bg-[linear-gradient(to_right,_#46826b,_#74cfac)]">
 	<div class="flex items-center gap-2 text-xl font-semibold">
 		<span>🌿</span>
 		<span>Green Clues</span>
