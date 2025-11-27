@@ -1,0 +1,16 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PUBLIC_API_URL=http://host.docker.internal:3010  # Special DNS for host machine
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
