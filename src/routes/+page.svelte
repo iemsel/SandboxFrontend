@@ -17,7 +17,7 @@
 
 	<!-- Tags -->
 	<div class="flex items-center gap-3 mb-8">
-		<button class="px-4 py-2 bg-[#46826b] text-white rounded">All Ideas</button>
+		<button class="px-4 py-2 bg-[var(--color-primary)] text-white rounded">All Ideas</button>
     <button class="px-4 py-2 bg-gray-100 rounded">Popular</button>
 		<button class="px-4 py-2 bg-gray-100 rounded">DIY</button>
 		<button class="px-4 py-2 bg-gray-100 rounded">Competition</button>

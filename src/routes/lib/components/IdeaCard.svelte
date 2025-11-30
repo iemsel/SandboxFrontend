@@ -1,7 +1,7 @@
 <div class="bg-white rounded-xl shadow p-4 flex flex-col gap-3 hover:shadow-lg transition">
 	<div class="relative">
 		
-		<span class="absolute top-2 right-15 bg-[#46826b] text-white text-xs px-2 py-1 rounded">
+		<span class="absolute top-2 right-15 bg-[var(--color-primary)] text-white text-xs px-2 py-1 rounded">
 			tag
 		</span>
 

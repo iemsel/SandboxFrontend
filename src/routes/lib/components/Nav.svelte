@@ -3,7 +3,7 @@
 </script>
 
 <nav class="w-full text-white px-6 py-4 flex items-center justify-between
-      bg-[linear-gradient(to_right,_#46826b,_#74cfac)]">
+      bg-[linear-gradient(to_right,var(--color-primary),var(--color-secondary))]">
 	<div class="flex items-center gap-2 text-xl font-semibold">
 		<span>🌿</span>
 		<span>Green Clues</span>
