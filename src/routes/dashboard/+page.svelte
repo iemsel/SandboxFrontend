@@ -1,4 +1,4 @@
-<div class="min-h-screen p-6 font-sans" style="background-color: var(--color-bg)">
+<div class="min-h-screen p-6 font-sans">
   <!-- Upcoming Activities -->
   <section class="mb-10">
     <h2
