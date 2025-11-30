@@ -5,10 +5,27 @@
 </script>
 <style>
   :root {
+    /* Primary Colors */
     --color-primary: #46826b;
-    --color-secondary: #b3f2da;
-  }
+    --color-primary-light: #b3f2da;
+    --color-primary-dark: #2f5c48;
 
+    /* Secondary / Accent Colors */
+    --color-secondary: #f9edcf;
+    --color-secondary-light: #fff4d6;
+    --color-secondary-dark: #f7d48f;
+
+    /* Neutral Colors */
+    --color-bg: #f1f8f4;
+    --color-white: #ffffff;
+    --color-border: #c7e5d9;
+    --color-border-light: #e0f2eb;
+
+    /* Text Colors */
+    --color-text-primary: #2f5c48;
+    --color-text-secondary: #46826b;
+    --color-text-accent: #b38600; 
+  }
 </style>
 <Nav/>
 
