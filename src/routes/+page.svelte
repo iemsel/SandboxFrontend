@@ -22,7 +22,6 @@
 		<button class="px-4 py-2 bg-[var(--color-white)] rounded">DIY</button>
 		<button class="px-4 py-2 bg-[var(--color-white)] rounded">Competition</button>
 		<button class="px-4 py-2 bg-[var(--color-white)] rounded">Group Project</button>
-		
 	</div>
 
 	<!-- Grid -->
