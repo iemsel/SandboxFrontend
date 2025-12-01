@@ -1,13 +1,39 @@
 <script>
   import "../app.css";
+  import Nav from "./lib/components/Nav.svelte";
   let { children } = $props();
 </script>
+<style>
+  :root {
+    /* Primary Colors */
+    --color-primary: #46826b;
+    --color-primary-light: #b3f2da;
+    --color-primary-dark: #2f5c48;
 
-<header class="p-4 bg-gray-100">
-  <h1 class="text-lg font-semibold">My New Svelte App</h1>
-</header>
+    /* Secondary / Accent Colors */
+    --color-secondary: #f9edcf;
+    --color-secondary-light: #fff4d6;
+    --color-secondary-dark: #f7d48f;
 
-<main class="p-4">
+    /* Neutral Colors */
+    --color-bg: #f1f8f4;
+    --color-white: #ffffff;
+    --color-border: #c7e5d9;
+    --color-border-light: #e0f2eb;
+
+    /* Text Colors */
+    --color-text-primary: #2f5c48;
+    --color-text-secondary: #46826b;
+    --color-text-accent: #b38600; 
+  }
+
+  :global(body) {
+    background-color: var(--color-bg);
+  }
+</style>
+<Nav/>
+
+<main class="px-4 py-8 max-w-6xl mx-auto">
   {@render children?.()}
 </main>
 
