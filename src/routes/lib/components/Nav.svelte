@@ -13,6 +13,7 @@
 		<li><a href="/" class="hover:underline">Home</a></li>
 		<li><a href="/dashboard" class="hover:underline">Dashboard</a></li>
 		<li><a href="/about" class="hover:underline">About</a></li>
+		<li><a href="/idea" class="hover:underline">idea</a></li>
 		<li class="bg-white text-green-700 font-bold rounded-full w-8 h-8 flex items-center justify-center">
 			{user}
 		</li>
