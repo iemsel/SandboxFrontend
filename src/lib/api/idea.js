@@ -77,10 +77,3 @@ export function removeFavorite(ideaId, token) {
     token,
   });
 }
-
-// get by id
-export async function getIdeaById(id) {
-  const ideas = await listIdeas();
-
-  return ideas.find((idea) => String(idea.id) === String(id));
-}

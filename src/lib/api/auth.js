@@ -1,38 +1,22 @@
 /* eslint-disable prettier/prettier */
+import { apiFetch } from './client.js';
 
 export function register({ email, name, password }) {
-  return fetch('/auth/register', {
+  return apiFetch('/auth/register', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, name, password }),
-  }).then(res => {
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
+    body: { email, name, password },
   });
 }
 
 export function login({ email, password }) {
-  return fetch('/auth/login', {
+  // returns: { token, user: { id, email, name } }
+  return apiFetch('/auth/login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
-  }).then(res => {
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
+    body: { email, password },
   });
 }
 
+
 export function logout() {
   localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  authStoreStore.logout();
-}
-
-export function getStoredUser() {
-  const userJSON = localStorage.getItem('user');
-  return userJSON ? JSON.parse(userJSON) : null;
-}
-
-export function me(token) {
-  return apiFetch('/auth/me', { token });
 }

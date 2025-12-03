@@ -1,4 +1,6 @@
-const BASE_URL = import.meta.env.VITE_PUBLIC_API_URL || 'http://localhost:3010';
+/* eslint-disable prettier/prettier */
+
+const BASE_URL = 'http://localhost:3010';
 
 /**
  * Small wrapper around fetch that:
