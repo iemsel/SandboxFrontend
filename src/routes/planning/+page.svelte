@@ -137,6 +137,17 @@
           </div>
         {/each}
       </div>
+
+      <!-- Footer buttons -->
+      <div class="flex justify-end gap-4 mt-6">
+        <button class="px-5 py-2 rounded border"
+                style="background-color: var(--color-white); border-color: var(--color-border); color: var(--color-text-primary);">
+          Cancel
+        </button>
+        <button class="px-5 py-2 rounded" style="background-color: var(--color-primary-dark); color: var(--color-white);">
+          Save
+        </button>
+      </div>
   </section>  
 </div>
 </div>
