@@ -36,6 +36,16 @@
     d.setDate(d.getDate() + i);
     return d;
   });
+
+  function nextWeek() {
+    currentDate = new Date(currentDate);
+    currentDate.setDate(currentDate.getDate() + 7);
+  }
+
+  function prevWeek() {
+    currentDate = new Date(currentDate);
+    currentDate.setDate(currentDate.getDate() - 7);
+  }
 </script>
 
 <div class="p-8 font-sans grid grid-cols-3 gap-10">
@@ -91,12 +101,12 @@
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-semibold" style="color: var(--color-text-primary);">Schedule</h2>
         <div class="flex items-center gap-6">
-          <button style="color: var(--color-text-secondary);">&lt;</button>
+          <button on:click={prevWeek} style="color: var(--color-text-secondary);">&lt;</button>
           <div class="text-center">
             <div class="font-semibold" style="color: var(--color-text-primary);">Week {weekNumber}, {year}</div>
             <div style="color: var(--color-text-secondary);">{monthName}</div>
           </div>
-          <button style="color: var(--color-text-secondary);">&gt;</button>
+          <button on:click={nextWeek} style="color: var(--color-text-secondary);">&gt;</button>
         </div>
       </div>
 
