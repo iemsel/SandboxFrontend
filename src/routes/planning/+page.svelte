@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from "svelte";
   let selectedGroup = "";
   let inviteChecked = false;
   $: if (!inviteChecked) selectedGroup = "";
@@ -74,6 +75,23 @@
     currentDate = new Date(currentDate);
     currentDate.setDate(currentDate.getDate() - 7);
   }
+
+  // dummy idea data
+  let idea = null;
+
+  onMount(() => {
+    // Simulate fetching from backend
+    setTimeout(() => {
+      idea = {
+        title: "Build a Bird Feeder",
+        description: "Create a simple bird feeder using recycled materials and watch local birds visit your garden.",
+        difficulty: "Easy",
+        rating: 4.6,
+        time: "45–60 min",
+        image: null // Replace with URL later if needed
+      };
+    }, 500); // fake delay
+  });
 </script>
 
 <div class="p-8 font-sans grid grid-cols-3 gap-10">
@@ -82,26 +100,27 @@
     <section class="rounded-xl shadow p-6" style="background-color: var(--color-white); border: 1px solid var(--color-border);">
       <h2 class="text-lg font-semibold mb-4" style="color: var(--color-text-primary);">Idea</h2>
       
-      <!-- image-->
-      <div class="w-full h-48 rounded-xl flex items-center justify-center text-xl mb-4"
-           style="background-color: var(--color-bg); color: var(--color-text-secondary); border: 1px dashed var(--color-border-light);">
-        Image Placeholder
-      </div>
+      {#if idea}
+        <div class="w-full h-48 rounded-xl flex items-center justify-center text-xl mb-4"
+             style="background-color: var(--color-bg); color: var(--color-text-secondary); border: 1px dashed var(--color-border-light);">
+          {#if idea.image}
+            <img src={idea.image} alt={idea.title} class="w-full h-full object-cover rounded-xl"/>
+          {:else}
+            Image Placeholder
+          {/if}
+        </div>
 
-      <!-- title idea-->
-      <h3 class="text-2xl font-bold mb-2" style="color: var(--color-text-primary);">Build a Bird Feeder</h3>
+        <h3 class="text-2xl font-bold mb-2" style="color: var(--color-text-primary);">{idea.title}</h3>
+        <p class="mb-4" style="color: var(--color-text-secondary);">{idea.description}</p>
 
-      <!-- description idea-->
-      <p class="mb-4" style="color: var(--color-text-secondary);">
-        Create a simple bird feeder using recycled materials and watch local birds visit your garden.
-      </p>
-
-      <!-- properties idea -->
-      <div class="flex items-center gap-6 mb-5" style="color: var(--color-text-secondary);">
-        <span>🔧 Easy</span>
-        <span>⭐ 4.6</span>
-        <span>⏱ 45–60 min</span>
-      </div>
+        <div class="flex items-center gap-6 mb-5" style="color: var(--color-text-secondary);">
+          <span>🔧 {idea.difficulty}</span>
+          <span>⭐ {idea.rating}</span>
+          <span>⏱ {idea.time}</span>
+        </div>
+      {:else}
+        <div>Loading idea...</div>
+      {/if}
 
       <!-- Invite checkbox -->
       <label class="font-medium flex items-center gap-2 mb-2" style="color: var(--color-text-primary);">
