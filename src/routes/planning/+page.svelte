@@ -3,15 +3,23 @@
   let inviteChecked = false;
   $: if (!inviteChecked) selectedGroup = "";
 
-  const days = [
-    { label: "MON" }, { label: "TUE" }, { label: "WED" },
-    { label: "THU" }, { label: "FRI" }, { label: "SAT" }, { label: "SUN" }
+  // Days of the week
+  let days = [
+    { label: "MON" },
+    { label: "TUE" },
+    { label: "WED" },
+    { label: "THU" },
+    { label: "FRI" },
+    { label: "SAT" },
+    { label: "SUN" }
   ];
 
+  // Hours for time grid
   const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
 
   let currentDate = new Date();
 
+  // Get ISO week number
   function getISOWeek(date) {
     const tmp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     const dayNum = tmp.getUTCDay() || 7;
@@ -20,6 +28,7 @@
     return Math.ceil((((tmp - yearStart) / 86400000) + 1) / 7);
   }
 
+  // Get Monday of the current week
   function getMonday(d) {
     const date = new Date(d);
     const day = (date.getDay() + 6) % 7;
@@ -27,6 +36,7 @@
     return date;
   }
 
+  // Reactive week data
   $: monday = getMonday(currentDate);
   $: weekNumber = getISOWeek(currentDate);
   $: year = monday.getFullYear();
@@ -37,6 +47,24 @@
     return d;
   });
 
+  // Update days array with dynamic day numbers and highlight current day
+  $: {
+    const today = new Date();
+
+    days = days.map((d, i) => {
+      const date = dayDates[i];
+      return {
+        ...d,
+        num: date.getDate(),
+        selected:
+          date.getFullYear() === today.getFullYear() &&
+          date.getMonth() === today.getMonth() &&
+          date.getDate() === today.getDate()
+      };
+    });
+  }
+
+  // Navigate weeks
   function nextWeek() {
     currentDate = new Date(currentDate);
     currentDate.setDate(currentDate.getDate() + 7);
@@ -49,7 +77,6 @@
 </script>
 
 <div class="p-8 font-sans grid grid-cols-3 gap-10">
-
   <!-- LEFT: Idea panel -->
   <div class="col-span-1">
     <section class="rounded-xl shadow p-6" style="background-color: var(--color-white); border: 1px solid var(--color-border);">
@@ -112,13 +139,23 @@
 
       <!-- Days header -->
       <div class="grid grid-cols-8 text-center border-b pb-4 mb-2" style="border-color: var(--color-border-light);">
-        <div></div>
-        {#each dayDates as date, index}
+        <div></div> <!-- Empty column for time labels -->
+
+        {#each days as d}
           <div>
-            <div class="text-sm mb-1" style="color: var(--color-text-secondary);">{days[index].label}</div>
-            <div class="w-10 h-10 mx-auto flex items-center justify-center rounded-full"
-                 style="background-color: transparent; color: var(--color-text-primary); border: 1px solid var(--color-border-light);">
-              {date.getDate()}
+            <div class="text-sm mb-1" style="color: var(--color-text-secondary);">
+              {d.label}
+            </div>
+
+            <div
+              class="w-10 h-10 mx-auto flex items-center justify-center rounded-full"
+              style="
+                background-color: {d.selected ? 'var(--color-primary-dark)' : 'transparent'};
+                color: {d.selected ? 'var(--color-white)' : 'var(--color-text-primary)'};
+                border: 1px solid {d.selected ? 'var(--color-primary-dark)' : 'var(--color-border-light)'};
+              "
+            >
+              {d.num}
             </div>
           </div>
         {/each}
