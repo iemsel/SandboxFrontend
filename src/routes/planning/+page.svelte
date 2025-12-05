@@ -3,24 +3,39 @@
   let inviteChecked = false;
   $: if (!inviteChecked) selectedGroup = "";
 
-  let week = 49;
-  let year = 2025;
-  let month = "December";
-
   const days = [
-    { label: "MON", num: 1 },
-    { label: "TUE", num: 2 },
-    { label: "WED", num: 3, selected: true },
-    { label: "THU", num: 4 },
-    { label: "FRI", num: 5 },
-    { label: "SAT", num: 6 },
-    { label: "SUN", num: 7 }
+    { label: "MON" }, { label: "TUE" }, { label: "WED" },
+    { label: "THU" }, { label: "FRI" }, { label: "SAT" }, { label: "SUN" }
   ];
 
-  // Hours: 00:00 → 23:00
-  const hours = Array.from({ length: 24 }, (_, i) =>
-    `${String(i).padStart(2, '0')}:00`
-  );
+  const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
+
+  let currentDate = new Date();
+
+  function getISOWeek(date) {
+    const tmp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = tmp.getUTCDay() || 7;
+    tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
+    return Math.ceil((((tmp - yearStart) / 86400000) + 1) / 7);
+  }
+
+  function getMonday(d) {
+    const date = new Date(d);
+    const day = (date.getDay() + 6) % 7;
+    date.setDate(date.getDate() - day);
+    return date;
+  }
+
+  $: monday = getMonday(currentDate);
+  $: weekNumber = getISOWeek(currentDate);
+  $: year = monday.getFullYear();
+  $: monthName = monday.toLocaleDateString("en-US", { month: "long" });
+  $: dayDates = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
 </script>
 
 <div class="p-8 font-sans grid grid-cols-3 gap-10">
@@ -67,83 +82,51 @@
     </section>
   </div>
 
-  <!-- RIGHT SIDE -->
-<div class="col-span-2">
-  <section
-    class="rounded-xl shadow p-6 flex flex-col"
-    style="background-color: var(--color-white); border: 1px solid var(--color-border); height: 700px;"
-  >
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-      <h2 class="text-xl font-semibold" style="color: var(--color-text-primary);">Schedule</h2>
+  <!-- RIGHT: Schedule -->
+  <div class="col-span-2">
+    <section class="rounded-xl shadow p-6 flex flex-col"
+             style="background-color: var(--color-white); border: 1px solid var(--color-border); height: 700px;">
 
-      <div class="flex items-center gap-6">
-        <button style="color: var(--color-text-secondary);">&lt;</button>
-
-        <div class="text-center">
-          <div class="font-semibold" style="color: var(--color-text-primary);">Week 49, 2025</div>
-          <div style="color: var(--color-text-secondary);">December</div>
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-semibold" style="color: var(--color-text-primary);">Schedule</h2>
+        <div class="flex items-center gap-6">
+          <button style="color: var(--color-text-secondary);">&lt;</button>
+          <div class="text-center">
+            <div class="font-semibold" style="color: var(--color-text-primary);">Week {weekNumber}, {year}</div>
+            <div style="color: var(--color-text-secondary);">{monthName}</div>
+          </div>
+          <button style="color: var(--color-text-secondary);">&gt;</button>
         </div>
-
-        <button style="color: var(--color-text-secondary);">&gt;</button>
       </div>
-    </div>
 
-
-    <!-- DAY HEADER WITH EMPTY TIME COLUMN -->
-    <div
-      class="grid grid-cols-8 text-center border-b pb-4 mb-2"
-      style="border-color: var(--color-border-light);"
-    >
-      <!-- Empty column for time labels -->
-      <div></div>
-
-      {#each days as d}
-        <div>
-          <div class="text-sm mb-1" style="color: var(--color-text-secondary);">
-            {d.label}
+      <!-- Days header -->
+      <div class="grid grid-cols-8 text-center border-b pb-4 mb-2" style="border-color: var(--color-border-light);">
+        <div></div>
+        {#each dayDates as date, index}
+          <div>
+            <div class="text-sm mb-1" style="color: var(--color-text-secondary);">{days[index].label}</div>
+            <div class="w-10 h-10 mx-auto flex items-center justify-center rounded-full"
+                 style="background-color: transparent; color: var(--color-text-primary); border: 1px solid var(--color-border-light);">
+              {date.getDate()}
+            </div>
           </div>
+        {/each}
+      </div>
 
-          <div
-            class="w-10 h-10 mx-auto flex items-center justify-center rounded-full"
-            style="
-              background-color: {d.selected ? 'var(--color-primary)' : 'transparent'};
-              color: {d.selected ? 'var(--color-white)' : 'var(--color-text-primary)'};
-              border: 1px solid {d.selected ? 'var(--color-primary)' : 'var(--color-border-light)'};
-            "
-          >
-            {d.num}
+      <!-- Time grid -->
+      <div class="flex-1 overflow-y-scroll pr-4" style="scrollbar-width: thin;">
+        {#each hours as hour}
+          <div class="grid grid-cols-8 h-14 border-b" style="border-color: var(--color-border-light);">
+            <div class="flex items-center justify-end pr-3 text-sm" style="color: var(--color-text-secondary);">{hour}</div>
+            {#each Array(7) as _}
+              <div class="border-l relative" style="border-color: var(--color-border-light);">
+                <div class="absolute left-0 right-0" style="top: 50%; border-top: 1px dashed var(--color-border-light); opacity: 0.6;"></div>
+              </div>
+            {/each}
           </div>
-        </div>
-      {/each}
-    </div>
-
-
-    <!-- SCROLLING GRID -->
-    <div class="flex-1 overflow-y-scroll pr-4" style="scrollbar-width: thin;">
-      
-      {#each hours as hour}
-        <!-- 8 column row: TIME | 7 DAYS -->
-        <div
-          class="grid grid-cols-8 h-14 border-b"
-          style="border-color: var(--color-border-light);"
-        >
-          <!-- TIME COLUMN -->
-          <div
-            class="flex items-center justify-end pr-3 text-sm"
-            style="color: var(--color-text-secondary);"
-          >
-            {hour}
-          </div>
-
-          <!-- 7 DAY CELLS -->
-          {#each Array(7) as _}
-            <div class="border-l" style="border-color: var(--color-border-light);"></div>
-          {/each}
-        </div>
-      {/each}
-
-    </div>
+        {/each}
+      </div>
   </section>  
 </div>
 </div>
