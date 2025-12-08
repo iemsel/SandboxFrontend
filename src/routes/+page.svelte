@@ -13,6 +13,12 @@
 
 	let search = "";
 	let selectedTag = "All";
+
+	let showFilter = false;
+
+	function toggleFilter() {
+		showFilter = !showFilter;
+	}
 </script>
 
 
@@ -47,6 +53,7 @@
 		<!-- Filter -->
 		<button
 			class="px-4 py-2 rounded border-[var(--color-primary-dark)] border bg-white flex items-center gap-2"
+			on:click={toggleFilter}
 		>
 			<Filter class="w-4 h-4" />
 			Filter
@@ -81,6 +88,35 @@
         {/each}
     </div>
 </section>
+
+<!-- Dark Background Overlay -->
+{#if showFilter}
+	<div
+		class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+		on:click={() => (showFilter = false)}
+	></div>
+{/if}
+
+<!-- Slide-in Filter Panel -->
+<div
+	class="fixed top-0 right-0 h-full w-120 bg-white shadow-xl z-50 transform transition-transform duration-300
+		{showFilter ? 'translate-x-0' : 'translate-x-full'}"
+>
+	<div class="p-6 flex justify-between items-center border-b">
+		<h2 class="text-xl font-semibold">Filters</h2>
+		<button
+			class="px-3 py-1 rounded border border-[var(--color-primary-dark)] text-[var(--color-primary-dark)]"
+			on:click={() => (showFilter = false)}
+		>
+			Close
+		</button>
+	</div>
+
+	<!-- Filter content goes here -->
+	<div class="p-6">
+		<p class="opacity-50">Put your filters here…</p>
+	</div>
+</div>
 
 <style>
     section { font-family: system-ui; }
