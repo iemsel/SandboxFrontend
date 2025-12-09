@@ -1,4 +1,4 @@
-/* eslint-disable prettier/prettier */
+// eslint-disable prettier/prettier
 
 import { apiFetch } from './client.js';
 
