@@ -1,5 +1,8 @@
 <script>
   import { onMount } from "svelte";
+  import { listPlans } from "$lib/api/planner.js";
+  import { me } from "$lib/api/auth.js"; // use your auth.js for token/user
+
   let selectedGroup = "";
   let inviteChecked = false;
   $: if (!inviteChecked) selectedGroup = "";
@@ -19,6 +22,9 @@
   const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
 
   let currentDate = new Date();
+  let plans = [];
+  let token = null;
+  let user = null;
 
   // Get ISO week number
   function getISOWeek(date) {
@@ -79,8 +85,33 @@
   // dummy idea data
   let idea = null;
 
-  onMount(() => {
-    // Simulate fetching from backend
+  // Fetch plans from backend
+  async function loadPlans() {
+    if (!token) return;
+
+    try {
+      const date = new Date().toISOString().slice(0, 10); // fetch today's plans
+      plans = await listPlans({ date }, token);
+      console.log("Fetched plans:", plans);
+    } catch (err) {
+      console.error("Error fetching plans:", err);
+    }
+  }
+
+  onMount(async () => {
+    try {
+      // Get current user and token from auth.js
+      const response = await me(token);
+      user = response.user;
+      token = response.token || null;
+
+      // Fetch backend plans
+      await loadPlans();
+    } catch (err) {
+      console.error("Failed to get user info or plans:", err);
+    }
+
+    // Existing dummy idea loading (kept exactly as before)
     setTimeout(() => {
       idea = {
         title: "Build a Bird Feeder",
@@ -88,7 +119,7 @@
         difficulty: "Easy",
         rating: 4.6,
         time: "45–60 min",
-        image: null // Replace with URL later if needed
+        image: null
       };
     }, 500); // fake delay
   });
