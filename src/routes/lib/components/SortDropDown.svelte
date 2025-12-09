@@ -1,19 +1,13 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import {
-		Search,
-		Filter,
-		ChevronDown,
-		Heart,
-		Clock,
-		Star
-	} from "@lucide/svelte";
+  import { ChevronDown } from "@lucide/svelte";
 
   export let open = false;
   const dispatch = createEventDispatcher();
 
   function setSort(value) {
     dispatch("change", value);
+    open = false; // close dropdown after selection
   }
 </script>
 
