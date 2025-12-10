@@ -26,6 +26,21 @@
   let token = null;
   let user = null;
 
+  // selected time slot
+  let selectedSlot = null;
+
+  // calculate real date+time from selected slot
+  $: selectedDateTime = selectedSlot
+  ? new Date(
+      dayDates[selectedSlot.dayIndex].getFullYear(),
+      dayDates[selectedSlot.dayIndex].getMonth(),
+      dayDates[selectedSlot.dayIndex].getDate(),
+      selectedSlot.hourIndex,
+      0,
+      0
+    )
+  : null;
+
   // Get ISO week number
   function getISOWeek(date) {
     const tmp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -121,7 +136,7 @@
         time: "45–60 min",
         image: null
       };
-    }, 500); // fake delay
+    }, 500);
   });
 </script>
 
@@ -166,6 +181,35 @@
         <option value="family">Family</option>
         <option value="friends">Friends</option>
       </select>
+
+      <!-- Selected Time Card -->
+      {#if selectedDateTime}
+        <div class="mt-6 p-4 rounded-xl border"
+             style="background-color: var(--color-bg); border-color: var(--color-border-light); color: var(--color-text-primary);">
+          <div class="font-semibold mb-1">Selected Time:</div>
+
+          <div class="text-xl font-bold">
+            {selectedDateTime.toLocaleDateString("en-US", {
+              weekday: "short",
+              day: "numeric",
+              month: "long"
+            })}
+          </div>
+
+          <div class="text-lg mb-1">
+            {selectedDateTime.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false
+            })}
+          </div>
+
+          <div class="text-sm" style="color: var(--color-text-secondary);">
+            Week {weekNumber}, {year}
+          </div>
+        </div>
+      {/if}
+
     </section>
   </div>
 
@@ -189,7 +233,7 @@
 
       <!-- Days header -->
       <div class="grid grid-cols-8 text-center border-b pb-4 mb-2" style="border-color: var(--color-border-light);">
-        <div></div> <!-- Empty column for time labels -->
+        <div></div>
 
         {#each days as d}
           <div>
@@ -213,12 +257,37 @@
 
       <!-- Time grid -->
       <div class="flex-1 overflow-y-scroll pr-4" style="scrollbar-width: thin;">
-        {#each hours as hour}
+        {#each hours as hour, hourIndex}
           <div class="grid grid-cols-8 h-14 border-b" style="border-color: var(--color-border-light);">
             <div class="flex items-center justify-end pr-3 text-sm" style="color: var(--color-text-secondary);">{hour}</div>
-            {#each Array(7) as _}
-              <div class="border-l relative" style="border-color: var(--color-border-light);">
-                <div class="absolute left-0 right-0" style="top: 50%; border-top: 1px dashed var(--color-border-light); opacity: 0.6;"></div>
+
+            {#each Array(7) as _, dayIndex}
+              <div
+                class="border-l relative cursor-pointer"
+                tabindex="0"
+                role="button"
+                on:click={() => selectedSlot = { dayIndex, hourIndex }}
+                on:keydown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    selectedSlot = { dayIndex, hourIndex };
+                    e.preventDefault(); 
+                  }
+                }}
+                style="
+                  border-color: var(--color-border-light);
+                  background-color: {
+                    selectedSlot &&
+                    selectedSlot.dayIndex === dayIndex &&
+                    selectedSlot.hourIndex === hourIndex
+                      ? 'var(--color-primary-light)'
+                      : 'transparent'
+                  };
+                "
+              >
+                <div
+                  class="absolute left-0 right-0"
+                  style="top: 50%; border-top: 1px dashed var(--color-border-light); opacity: 0.6;"
+                ></div>
               </div>
             {/each}
           </div>
@@ -235,6 +304,6 @@
           Save
         </button>
       </div>
-  </section>  
-</div>
+    </section>  
+  </div>
 </div>
