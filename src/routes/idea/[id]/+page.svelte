@@ -2,11 +2,34 @@
   import Nav from "../../lib/components/Nav.svelte";
   import IdeaCard from "../../lib/components/IdeaCard.svelte";
 
+  let search = "";
   let showAI = false;
 
   // Mock data 
-  export let data;
-  const { idea } = data;
+  export let idea = {
+    title: "Build a Bird Feeder",
+    description:
+      "Create a simple bird feeder using recycled materials and watch local birds visit your garden.",
+    ageRange: "7-9",
+    weather: "sunny",
+    duration: "45-60 minutes",
+    imageUrl: "https://placehold.co/600x600",
+    tools: ["Plastic bottle", "String", "Scissors"],
+    instructions: [
+      "Clean and dry a plastic bottle",
+      "Cut two small holes near the bottom",
+      "Insert a wooden spoon",
+      "Fill with birdseed"
+    ],
+    tags: ["Nature", "Recycle"],
+    ratings: {
+      fun: 4.5,
+      learning: 4.2,
+      difficulty: 2.0,
+      setup: 3.5,
+      time: 3.0
+    }
+  };
 
   let comments = [
     {
@@ -29,35 +52,37 @@
     }
   ];
 
-  import { browser } from '$app/environment';
   import { onMount, onDestroy } from 'svelte';
-
   
   onMount(() => {
-    if (!browser) return;
-
+    // Add a body class to identify this page
     document.body.classList.add('idea-page');
-
+    // Modify the main element
     const main = document.querySelector('main');
     if (main) {
-      main.dataset.originalClasses = main.className;
       main.classList.remove('max-w-6xl', 'mx-auto');
       main.classList.add('w-full', 'max-w-none');
     }
   });
 
+  // Clean up when leaving the page
   onDestroy(() => {
-    if (!browser) return;
-
+    // Remove body class
     document.body.classList.remove('idea-page');
-
+    
+    // Restore main element classes
     const main = document.querySelector('main');
-    if (main?.dataset?.originalClasses) {
+    if (main && main.dataset.originalClasses) {
+      // Reset to original classes
       main.className = main.dataset.originalClasses;
+      // Clean up the data attribute
       delete main.dataset.originalClasses;
+    } else if (main) {
+      // Fallback: add back the default classes
+      main.classList.add('max-w-6xl', 'mx-auto');
+      main.classList.remove('w-full', 'max-w-none');
     }
   });
-
 </script>
 
 <!-- MAIN CONTENT WRAPPER THAT SLIDES LEFT -->
@@ -206,29 +231,18 @@
               <div class="space-y-2">
                 <div class="flex justify-between text-sm">
                   <span class="capitalize text-gray-700">{key}</span>
-
-                  {#if typeof value === 'number'}
-                    <span class="text-gray-600 font-medium">
-                      {value.toFixed(1)}/5
-                    </span>
-                  {:else}
-                    <span class="text-gray-400 italic">Not rated</span>
-                  {/if}
+                  <span class="text-gray-600 font-medium">{value.toFixed(1)}/5</span>
                 </div>
-
-                {#if typeof value === 'number'}
-                  <div class="flex gap-1">
-                    {#each Array(Math.round(value)) as _}
-                      <span class="text-2xl text-yellow-400">★</span>
-                    {/each}
-                    {#each Array(5 - Math.round(value)) as _}
-                      <span class="text-2xl text-gray-300">★</span>
-                    {/each}
-                  </div>
-                {/if}
+                <div class="flex gap-1">
+                  {#each Array(Math.round(value)) as _, i}
+                    <span class="text-2xl text-yellow-400">★</span>
+                  {/each}
+                  {#each Array(5 - Math.round(value)) as _, i}
+                    <span class="text-2xl text-gray-300">★</span>
+                  {/each}
+                </div>
               </div>
             {/each}
-
           </div>
         </div>
       </div>
