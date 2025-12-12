@@ -3,7 +3,7 @@
   import Nav from "./lib/components/Nav.svelte";
   let { children } = $props();
 </script>
-<style>
+<style global>
   :root {
     /* Primary Colors */
     --color-primary: #46826b;
