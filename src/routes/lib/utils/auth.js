@@ -2,10 +2,7 @@
 const API_BASE_URL = '/auth'; 
 
 import { authStore } from "../stores/authStore.js";
-// No need for goto here as it's not used in this file
-// If you are using relative paths, make sure they are correct for this file's location:
-// Assuming auth.js is in src/lib/utils/ and authStore.js is in src/lib/stores/, 
-// the relative import should be correct: `../stores/authStore.js`
+
 
 /**
  * Calls the backend login endpoint and stores the token/user data.
@@ -99,21 +96,14 @@ export async function registerUser(email, name, password) {
         // 2. Attempt to parse the text as JSON.
         data = JSON.parse(responseText);
     } catch (e) {
-        // 3. If parsing fails, the response was non-JSON (like HTML/plain text).
-        // Since the request was not OK, we treat this non-JSON response as an error.
         if (!response.ok) {
             // Throw a specific error using the non-JSON text itself.
             throw new Error(`Server returned non-JSON error data (HTTP ${response.status}). Response: "${responseText.substring(0, 50)}..."`);
         }
-        // If response.ok is true, but it's not JSON, something is fundamentally wrong, 
-        // but we'll proceed assuming the main backend always returns JSON on success (201).
     }
 
 
     if (!response.ok) {
-      // 4. If the response status code is 4xx or 5xx:
-      // We look for the 'error' field in the parsed JSON data object.
-      // If parsing failed (and data is empty), we use a generic message.
       const errorMessage = data.error 
                          ? data.error 
                          : 'Registration failed due to server error (no specific error message).';
@@ -121,7 +111,6 @@ export async function registerUser(email, name, password) {
       throw new Error(errorMessage);
     }
 
-    // 5. If response.ok is true and it's valid JSON, return the data.
     return data; // Returns the { id, email, name } object
 
   } catch (error) {
