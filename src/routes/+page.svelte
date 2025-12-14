@@ -9,9 +9,15 @@
     ChevronDown,
     Heart,
     Clock,
-    Star
+    Star,
   } from "@lucide/svelte";
+  import FilterPanel from "./lib/components/FilterPanel.svelte";
+  import { onMount } from "svelte";
 
+  onMount(() => {
+    handleApplyFilters({ detail: filters });
+  });
+  
   let search = "";
   let selectedTag = "All";
 
@@ -23,22 +29,100 @@
   // Initialize ideas safely for SSR
   let ideas = [...data.ideas];
 
+  // Sort
   let sortBy = null;
   function applySort(sortValue) {
     sortBy = sortValue;
 
     ideas = [...ideas].sort((a, b) => {
       switch (sortValue) {
-        case "name-asc": return a.title.localeCompare(b.title);
-        case "name-desc": return b.title.localeCompare(a.title);
-        case "date-asc": return new Date(a.created_at) - new Date(b.created_at);
-        case "date-desc": return new Date(b.created_at) - new Date(a.created_at);
-        case "rating-asc": return (a.rating ?? 0) - (b.rating ?? 0);
-        case "rating-desc": return (b.rating ?? 0) - (a.rating ?? 0);
-        default: return 0;
+        case "name-asc":
+          return a.title.localeCompare(b.title);
+        case "name-desc":
+          return b.title.localeCompare(a.title);
+        case "date-asc":
+          return new Date(a.created_at) - new Date(b.created_at);
+        case "date-desc":
+          return new Date(b.created_at) - new Date(a.created_at);
+        case "rating-asc":
+          return (a.rating ?? 0) - (b.rating ?? 0);
+        case "rating-desc":
+          return (b.rating ?? 0) - (a.rating ?? 0);
+        default:
+          return 0;
       }
     });
   }
+
+  //Filter
+  let filters = {
+    difficulty: null,
+    season: null,
+    yard: null,
+    subject: null,
+    weather: null,
+    tags: [],
+    categories: [],
+    minAge: 0,
+    maxAge: 18,
+  };
+
+  function handleApplyFilters(e) {
+    filters = e.detail;
+    showFilter = false;
+  }
+
+  $: filteredIdeas = ideas.filter((idea) => {
+    const matchesSearch = idea.title
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    //  Quick filters for later when ratings works
+    // const matchesTag =
+    //   selectedTag === "All" ||
+    //   (selectedTag === "Popular"
+    //     ? idea.rating >= 4
+    //     : idea.tags
+    //         ?.map((t) => t.toLowerCase())
+    //         .includes(selectedTag.toLowerCase()));
+
+    const matchesDifficulty =
+      !filters.difficulty ||
+      idea.difficulty.toLowerCase() === filters.difficulty.toLowerCase();
+
+    const seasonMap = {
+      Spring: "spring",
+      Summer: "summer",
+      Fall: "autumn",
+      Winter: "winter",
+    };
+    const matchesSeason =
+      !filters.season ||
+      idea.season.toLowerCase() === "any" ||
+      idea.season.toLowerCase() === seasonMap[filters.season];
+
+    const matchesAge =
+      idea.max_age >= filters.minAge && idea.min_age <= filters.maxAge;
+
+    const matchesSubject =
+      !filters.subject ||
+      (idea.subject &&
+        idea.subject.toLowerCase() === filters.subject.toLowerCase());
+
+    const matchesWeather =
+      !filters.weather ||
+      (idea.weather &&
+        idea.weather.toLowerCase() === filters.weather.toLowerCase());
+
+    return (
+      matchesSearch &&
+      matchesDifficulty &&
+      matchesSeason &&
+      matchesAge &&
+      matchesSubject &&
+      matchesWeather
+    );
+  });
 
   function handleIdeaClick(idea) {
     console.log("Clicked idea:", idea);
@@ -52,7 +136,9 @@
   <div class="flex items-center gap-3 mb-6">
     <!-- Search -->
     <div class="relative">
-      <Search class="w-4 h-4 text-[var(--color-primary-dark)] absolute left-3 top-1/2 -translate-y-1/2" />
+      <Search
+        class="w-4 h-4 text-[var(--color-primary-dark)] absolute left-3 top-1/2 -translate-y-1/2"
+      />
       <input
         bind:value={search}
         placeholder="Search ideas..."
@@ -102,9 +188,9 @@
   </div>
 
   <!-- Ideas Grid -->
-  {#if ideas.length > 0}
+  {#if filteredIdeas.length > 0}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {#each ideas as idea}
+      {#each filteredIdeas as idea}
         <IdeaCard {idea} />
       {/each}
     </div>
@@ -138,7 +224,7 @@
 
   <!-- Filter content goes here -->
   <div class="p-6">
-    <p class="opacity-50">Put your filters here…</p>
+    <FilterPanel on:apply={handleApplyFilters} />
   </div>
 </div>
 
