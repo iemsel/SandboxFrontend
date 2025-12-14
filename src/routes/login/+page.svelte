@@ -1,9 +1,8 @@
 <script>
-  import { authStore } from '../lib/stores/authStore.js';
-  import { loginUser, logoutUser } from "../lib/utils/auth.js";
+  import { login } from "$lib/api/auth.js";
+  import { authStore } from '$lib/api/authStore.js';
   import { goto } from "$app/navigation"; 
   
-  // State for the form
   let email = "";
   let password = "";
   let error = "";
@@ -11,7 +10,7 @@
 
   async function handleSubmit(event) {
     event.preventDefault();
-    error = ""; // Clear previous errors
+    error = "";
     
     if (!email || !password) {
       error = "Please enter both email and password.";
@@ -20,23 +19,26 @@
 
     isLoading = true;
 
-    try {
-      // loginUser function handles the API call and updates the authStore on success
-      const response = await loginUser(email, password);
+try {
+  
+    const response = await login({ email, password });
+    
+    if (response.token) {
+      // Store user info in localStorage and update authStore
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      authStore.login(response.user);
       
-      // Assuming successful login, redirect to the dashboard
-      if (response.token) {
-        await goto("/dashboard"); // Redirect to the dashboard page
-      } else {
-        error = "Login failed. Please check your credentials.";
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-      // Display the specific error from the API or a general message
-      error = err.message || "An unexpected error occurred during login.";
-    } finally {
-      isLoading = false;
+      await goto("/dashboard");
+    } else {
+      error = "Login failed. Please check your credentials.";
     }
+  } catch (err) {
+    console.error("Login error:", err);
+    error = err.message || "An unexpected error occurred during login.";
+  } finally {
+    isLoading = false;
+  }
   }
 
 </script>

@@ -1,5 +1,5 @@
 <script>
-  import { registerUser } from "../lib/utils/auth.js"; 
+  import { register } from "$lib/api/auth.js"; 
   import { goto } from "$app/navigation";
   
   // State for the form
@@ -16,14 +16,14 @@
     successMessage = "";
     
     if (!email || !name || !password) {
-      error = "Name, email, and password are required.";
+      error = "Name, email and password are required.";
       return;
     }
 
     isLoading = true;
 
     try {
-      await registerUser(email, name, password);
+      await register({ email, name, password });
       
       // On successful registration, clear form and show success message
       email = "";
