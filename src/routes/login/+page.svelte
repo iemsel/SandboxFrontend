@@ -29,12 +29,7 @@ try {
       localStorage.setItem('user', JSON.stringify(response.user));
       authStore.login(response.user);
       
-      //Set the cookie
-      // path=/ means the cookie is valid for the entire site
-      //max-age is 28800 seconds = 8 hours
-      document.cookie = `token=${response.token}; path=/; max-age=28800; SameSite=Lax`;
-      
-      await goto("/");
+      await goto("/dashboard");
     } else {
       error = "Login failed. Please check your credentials.";
     }

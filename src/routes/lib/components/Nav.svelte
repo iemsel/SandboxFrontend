@@ -1,20 +1,23 @@
 <script>
-    import { authStore } from "$lib/api/authStore";
-    import { logout } from "$lib/api/auth.js";
-    import { goto } from "$app/navigation";
-    import { ChevronDown, LogOut, User, LayoutDashboard } from "@lucide/svelte";
+	// export let user = "U";
+    import { authStore } from '$lib/stores/authStore';
+    import { logout } from '$lib/api/auth.js';
+    import { goto } from '$app/navigation';
 
-    let showDropdown = false;
+    let isLoggedIn = false;
+    // let user = "U";
+
+    $effect(() => {
+    isLoggedIn = $authStore.isLoggedIn;
+    user = authStore.user;
+    });
 
     function handleLogout() {
         logout();
-        showDropdown = false;
         goto("/");
-    }
+    
+}
 
-    function toggleDropdown() {
-        showDropdown = !showDropdown;
-    }
 </script>
 
 <nav
