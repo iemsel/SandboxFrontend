@@ -78,7 +78,9 @@ export function removeFavorite(ideaId, token) {
   });
 }
 
-// GET /ideas/:id 
-export function getIdeaById(id, token) {
-  return apiFetch(`/ideas/${id}`, { token });
+// get by id
+export async function getIdeaById(id) {
+  const ideas = await listIdeas();
+
+  return ideas.find((idea) => String(idea.id) === String(id));
 }
