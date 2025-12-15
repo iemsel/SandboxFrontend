@@ -36,7 +36,7 @@
       dayDates[selectedSlot.dayIndex].getMonth(),
       dayDates[selectedSlot.dayIndex].getDate(),
       selectedSlot.hourIndex,
-      0,
+      selectedSlot.minute || 0,
       0
     )
   : null;
@@ -266,13 +266,25 @@
                 class="border-l relative cursor-pointer"
                 tabindex="0"
                 role="button"
-                on:click={() => selectedSlot = { dayIndex, hourIndex }}
+                on:click={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const clickY = e.clientY - rect.top;
+                  const isBottomHalf = clickY > rect.height / 2;
+
+                  selectedSlot = {
+                    dayIndex,
+                    hourIndex,
+                    minute: isBottomHalf ? 30 : 0
+                  };
+                }}
+
                 on:keydown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
-                    selectedSlot = { dayIndex, hourIndex };
-                    e.preventDefault(); 
+                    selectedSlot = { dayIndex, hourIndex, minute: 0 };
+                    e.preventDefault();
                   }
                 }}
+
                 style="
                   border-color: var(--color-border-light);
                   background-color: {
