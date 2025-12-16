@@ -18,29 +18,6 @@
     handleApplyFilters({ detail: filters });
   });
 
-  const QUICK_FILTERS = {
-    All: {
-      minAge: 0,
-      maxAge: 18,
-      minDuration: 0,
-      maxDuration: 120,
-      difficulty: null,
-    },
-
-    Popular: {
-      // placeholder for later when rating works
-    },
-
-    "Quick and Easy": {
-      maxDuration: 30,
-      difficulty: "Easy",
-    },
-
-    Challenge: {
-      difficulty: "Hard",
-    },
-  };
-
   let search = "";
   let selectedTag = "All";
 
