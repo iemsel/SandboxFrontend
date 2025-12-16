@@ -18,6 +18,29 @@
     handleApplyFilters({ detail: filters });
   });
 
+  const QUICK_FILTERS = {
+    All: {
+      minAge: 0,
+      maxAge: 18,
+      minDuration: 0,
+      maxDuration: 120,
+      difficulty: null,
+    },
+
+    Popular: {
+      // placeholder for later when rating works
+    },
+
+    "Quick and Easy": {
+      maxDuration: 30,
+      difficulty: "Easy",
+    },
+
+    Challenge: {
+      difficulty: "Hard",
+    },
+  };
+
   let search = "";
   let selectedTag = "All";
 
@@ -55,7 +78,7 @@
   }
 
   //Filter
-  let filters = {
+  const BASE_FILTERS = {
     difficulty: null,
     season: null,
     yard: null,
@@ -68,25 +91,34 @@
     minDuration: 0,
     maxDuration: 120,
   };
+  let filters = { ...BASE_FILTERS };
 
   function handleApplyFilters(e) {
     filters = e.detail;
     showFilter = false;
   }
 
+  function applyQuickFilter(tab) {
+    selectedTag = tab;
+
+    if (tab === "All") {
+      filters = { ...BASE_FILTERS };
+      return;
+    }
+
+    const preset = QUICK_FILTERS[tab];
+    if (!preset) return;
+
+    filters = {
+      ...BASE_FILTERS,
+      ...preset,
+    };
+  }
+
   $: filteredIdeas = ideas.filter((idea) => {
     const matchesSearch = idea.title
       .toLowerCase()
       .includes(search.toLowerCase());
-
-    //  Quick filters for later when ratings works
-    // const matchesTag =
-    //   selectedTag === "All" ||
-    //   (selectedTag === "Popular"
-    //     ? idea.rating >= 4
-    //     : idea.tags
-    //         ?.map((t) => t.toLowerCase())
-    //         .includes(selectedTag.toLowerCase()));
 
     const matchesDifficulty =
       !filters.difficulty ||
@@ -180,14 +212,14 @@
 
   <!-- Category Tabs -->
   <div class="flex items-center gap-3 mb-8">
-    {#each ["All", "Popular", "DIY", "Competition", "Group Project"] as tab}
+    {#each ["All", "Popular", "Quick and Easy", "Challenge"] as tab}
       <button
         class={`px-4 py-2 rounded ${
           selectedTag === tab
             ? "bg-[var(--color-primary)] text-white"
             : "bg-white"
         }`}
-        on:click={() => (selectedTag = tab)}
+        on:click={() => applyQuickFilter(tab)}
       >
         {tab}
       </button>
