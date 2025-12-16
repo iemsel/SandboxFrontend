@@ -17,7 +17,7 @@
   onMount(() => {
     handleApplyFilters({ detail: filters });
   });
-  
+
   let search = "";
   let selectedTag = "All";
 
@@ -65,6 +65,8 @@
     categories: [],
     minAge: 0,
     maxAge: 18,
+    minDuration: 0,
+    maxDuration: 120,
   };
 
   function handleApplyFilters(e) {
@@ -104,6 +106,10 @@
     const matchesAge =
       idea.max_age >= filters.minAge && idea.min_age <= filters.maxAge;
 
+    const matchesDuration =
+      idea.time_minutes >= filters.minDuration &&
+      idea.time_minutes <= filters.maxDuration;
+
     const matchesSubject =
       !filters.subject ||
       (idea.subject &&
@@ -120,7 +126,8 @@
       matchesSeason &&
       matchesAge &&
       matchesSubject &&
-      matchesWeather
+      matchesWeather &&
+      matchesDuration
     );
   });
 
