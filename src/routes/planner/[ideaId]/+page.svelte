@@ -131,18 +131,6 @@
     } catch (err) {
       console.error("Failed to get user info or plans:", err);
     }
-
-    // Existing dummy idea loading (kept exactly as before)
-    //   setTimeout(() => {
-    //     idea = {
-    //       title: "Build a Bird Feeder",
-    //       description: "Create a simple bird feeder using recycled materials and watch local birds visit your garden.",
-    //       difficulty: "Easy",
-    //       rating: 4.6,
-    //       time: "45–60 min",
-    //       image: null
-    //     };
-    //   }, 500);
   });
 </script>
 
