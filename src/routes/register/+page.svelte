@@ -2,7 +2,6 @@
   import { register } from "$lib/api/auth.js"; 
   import { goto } from "$app/navigation";
   
-  // State for the form
   let email = "";
   let name = "";
   let password = "";
@@ -12,7 +11,7 @@
 
   async function handleSubmit(event) {
     event.preventDefault();
-    error = ""; // Clear previous errors
+    error = "";
     successMessage = "";
     
     if (!email || !name || !password) {
@@ -25,13 +24,11 @@
     try {
       await register({ email, name, password });
       
-      // On successful registration, clear form and show success message
       email = "";
       name = "";
       password = "";
       successMessage = "Registration successful! You can now log in.";
       
-      // Optionally redirect to login after a delay
       setTimeout(() => {
         goto("/login");
       }, 2000);

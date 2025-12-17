@@ -1,9 +1,8 @@
 import { writable } from 'svelte/store';
 
-// Define the initial state
 const initialState = {
   isLoggedIn: false,
-  user: null, // Holds { id, email, name }
+  user: null,
   initial: 'U' // Default initial for the avatar
 };
 
@@ -25,7 +24,6 @@ function createAuthStore() {
         }
     },
 
-    // Function to handle login
     login: (user) => {
       const initial = user.name ? user.name.charAt(0).toUpperCase() : 'U';
       update(() => ({
@@ -35,7 +33,6 @@ function createAuthStore() {
       }));
     },
     
-    // Function to handle logout
     logout: () => {
       set(initialState);
     },

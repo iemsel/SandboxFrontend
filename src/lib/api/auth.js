@@ -1,5 +1,7 @@
 /* eslint-disable prettier/prettier */
 
+import { authStore } from '$lib/api/authStore.js';
+
 export function register({ email, name, password }) {
   return fetch('/auth/register', {
     method: 'POST',
@@ -25,7 +27,8 @@ export function login({ email, password }) {
 export function logout() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
-  authStoreStore.logout();
+  document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  authStore.logout();
 }
 
 export function getStoredUser() {
