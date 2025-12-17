@@ -16,7 +16,7 @@
   });
 
 </script>
-<style>
+<style global>
   :root {
     /* Primary Colors */
     --color-primary: #46826b;
