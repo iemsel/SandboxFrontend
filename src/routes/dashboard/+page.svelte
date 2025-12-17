@@ -14,7 +14,7 @@
     >
       <div class="text-5xl mb-4">📆</div>
       <p class="mb-4">No upcoming activities planned yet.</p>
-      <a href="/dashboard/plan-activity"
+      <a href="/"
         class="px-6 py-2 rounded"
         style="background-color: var(--color-primary-dark); color: var(--color-white)"
       >
