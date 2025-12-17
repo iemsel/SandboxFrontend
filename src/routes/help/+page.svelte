@@ -23,17 +23,22 @@
   ];
 
   let activeSection = "intro";
+  let isProgrammaticScroll = false;
 
   onMount(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            activeSection = entry.target.id;
-          }
-        });
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+        if (!isProgrammaticScroll && visible.length > 0) {
+          activeSection = visible[0].target.id;
+        }
       },
-      { rootMargin: "-40% 0px -50% 0px" },
+      {
+        rootMargin: "-30% 0px -60% 0px",
+      },
     );
 
     sections.forEach(({ id }) => {
@@ -45,9 +50,17 @@
   });
 
   function scrollTo(id) {
+    isProgrammaticScroll = true;
+    activeSection = id;
+
     document.getElementById(id)?.scrollIntoView({
       behavior: "smooth",
     });
+
+    // Re-enable observer after scroll finishes
+    setTimeout(() => {
+      isProgrammaticScroll = false;
+    }, 500);
   }
 
   let openFaq = null;
