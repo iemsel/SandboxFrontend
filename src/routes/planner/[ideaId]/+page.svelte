@@ -180,7 +180,14 @@
         >
           <span>🔧 {idea.difficulty}</span>
           <!-- <span>⭐ {idea.rating}</span> for when rating works -->
-          <span>⏱ {idea.duration}</span>
+          <span>
+            ⏱
+            {#if idea.duration?.min != null && idea.duration?.max != null}
+              {idea.duration.min}–{idea.duration.max} min
+            {:else if idea.duration?.max != null}
+              {idea.duration.max} min
+            {/if}
+          </span>
         </div>
       {:else}
         <div>Loading idea...</div>

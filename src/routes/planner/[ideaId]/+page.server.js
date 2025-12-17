@@ -8,11 +8,48 @@ export async function load({ params }) {
     return { idea: null };
   }
 
+  function parseDuration(raw) {
+  if (typeof raw.time_label === 'string') {
+    const range = raw.time_label.match(/(\d+)\s*[-–]\s*(\d+)/);
+    if (range) {
+      return {
+        min: Number(range[1]),
+        max: Number(range[2])
+      };
+    }
+
+    const single = raw.time_label.match(/(\d+)/);
+    if (single) {
+      const val = Number(single[1]);
+      return { min: val, max: val };
+    }
+  }
+
+  if (raw.time_min != null && raw.time_max != null) {
+    return {
+      min: raw.time_min,
+      max: raw.time_max
+    };
+  }
+
+  if (raw.time_minutes != null) {
+    return {
+      min: raw.time_minutes,
+      max: raw.time_minutes
+    };
+  }
+
+  return {
+    min: null,
+    max: null
+  };
+}
+
   const idea = {
     id: raw.id,
     title: raw.title,
     description: raw.description,
-    duration: raw.time_label ?? `${raw.time_minutes} min`,
+    duration: parseDuration(raw),
     weather: raw.weather,
     difficulty: raw.difficulty,
     ageRange: `${raw.min_age}–${raw.max_age}`,
