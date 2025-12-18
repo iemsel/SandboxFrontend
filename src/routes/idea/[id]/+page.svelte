@@ -1,6 +1,9 @@
 <script>
   import Nav from "../../lib/components/Nav.svelte";
   import IdeaCard from "../../lib/components/IdeaCard.svelte";
+  import { authStore } from "$lib/api/authStore.js";
+  import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
 
   let showAI = false;
 
@@ -151,13 +154,25 @@
             <!-- Add Review -->
             <div class="border border-[var(--color-border)] rounded-lg p-6 bg-white space-y-4">
               <h3 class="text-lg font-semibold text-[var(--color-text-primary)]">Add Your Review</h3>
-              <div class="space-y-4">
-                <input class="w-full border border-[var(--color-border)] rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent" placeholder="Title" />
-                <textarea class="w-full border border-[var(--color-border)] rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent" placeholder="Write your review..." rows="4"></textarea>
-                <button class="w-full px-4 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary)] transition-colors">
-                  Submit Review
-                </button>
-              </div>
+              {#if $authStore.isLoggedIn}
+                <div class="space-y-4">
+                  <input class="w-full border border-[var(--color-border)] rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent" placeholder="Title" />
+                  <textarea class="w-full border border-[var(--color-border)] rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent" placeholder="Write your review..." rows="4"></textarea>
+                  <button class="w-full px-4 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary)] transition-colors">
+                    Submit Review
+                  </button>
+                </div>
+              {:else}
+                <div class="py-8 text-center">
+                  <p class="mb-4 text-gray-600">Please login to add a comment and rating</p>
+                  <button 
+                    class="px-4 py-3 bg-[var(--color-primary)] text-white rounded-lg cursor-pointer font-medium hover:bg-[var(--color-primary)] transition-colors"
+                    on:click={() => goto(`/login?returnUrl=${encodeURIComponent($page.url.pathname)}`)}
+                  >
+                    Login to Comment
+                  </button>
+                </div>
+              {/if}
             </div>
 
             <!-- Existing Comments -->
