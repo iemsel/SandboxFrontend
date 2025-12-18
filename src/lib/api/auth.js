@@ -1,19 +1,39 @@
 /* eslint-disable prettier/prettier */
-import { apiFetch } from './client.js';
+
+import { authStore } from '$lib/api/authStore.js';
 
 export function register({ email, name, password }) {
-  return apiFetch('/auth/register', {
+  return fetch('/auth/register', {
     method: 'POST',
-    body: { email, name, password },
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, name, password }),
+  }).then(res => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
   });
 }
 
 export function login({ email, password }) {
-  // returns: { token, user: { id, email, name } }
-  return apiFetch('/auth/login', {
+  return fetch('/auth/login', {
     method: 'POST',
-    body: { email, password },
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  }).then(res => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
   });
+}
+
+export function logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  authStore.logout();
+}
+
+export function getStoredUser() {
+  const userJSON = localStorage.getItem('user');
+  return userJSON ? JSON.parse(userJSON) : null;
 }
 
 export function me(token) {
