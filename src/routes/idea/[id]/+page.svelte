@@ -4,38 +4,109 @@
   import { authStore } from "$lib/api/authStore.js";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
-
-  let showAI = false;
-
-  // Mock data 
-  export let data;
-  const { idea } = data;
-
-  let comments = [
-    {
-      name: "Jane Doe",
-      avatar: "JD",
-      rating: 5,
-      title: "Amazing activity!",
-      text: "My students loved this project.",
-      likes: 12,
-      dislikes: 0
-    },
-    {
-      name: "Mike Smith",
-      avatar: "MS",
-      rating: 4,
-      title: "Great outside",
-      text: "Kids learned a lot.",
-      likes: 8,
-      dislikes: 1
-    }
-  ];
-
+  import { addComment } from "$lib/api/idea.js";
   import { browser } from '$app/environment';
   import { onMount, onDestroy } from 'svelte';
 
+  let showAI = false;
+
+  // Data from server
+  export let data;
+  const { idea } = data;
   
+  // Helper function to map comment with user info
+  function mapCommentWithUser(comment) {
+    const isCurrentUser = comment.user_id === $authStore.user?.id;
+    return {
+      ...comment,
+      name: isCurrentUser 
+        ? ($authStore.user?.name || 'You')
+        : 'User',
+      avatar: isCurrentUser
+        ? ($authStore.user?.name ? $authStore.user.name.charAt(0).toUpperCase() : 'U')
+        : 'U'
+    };
+  }
+
+  // Comments from server, will be updated after new submissions
+  let comments = (data.comments || []).map(mapCommentWithUser);
+
+  // Comment form state
+  let newCommentText = "";
+  let newCommentRating = null;
+  let isSubmitting = false;
+  let submitError = "";
+
+  // Get auth token from localStorage
+  function getToken() {
+    if (!browser) return null;
+    return localStorage.getItem('token');
+  }
+
+  // Submit comment
+  async function submitComment() {
+    // Reset error
+    submitError = "";
+
+    // Frontend validation
+    if (!newCommentText.trim()) {
+      submitError = "Please enter a comment";
+      return;
+    }
+
+    if (!newCommentRating || newCommentRating < 1 || newCommentRating > 5) {
+      submitError = "Please select a rating (1-5 stars)";
+      return;
+    }
+
+    if (!$authStore.isLoggedIn) {
+      submitError = "Please log in to comment";
+      return;
+    }
+
+    isSubmitting = true;
+
+    try {
+      const token = getToken();
+      
+      if (!token) {
+        submitError = "Authentication token not found. Please log in again.";
+        isSubmitting = false;
+        return;
+      }
+
+      // Rating is required, always include it
+      const body = { 
+        text: newCommentText.trim(),
+        rating: newCommentRating
+      };
+      
+      const newComment = await addComment(idea.id, body, token);
+
+      // Add the new comment to the list with user info
+      comments = [...comments, mapCommentWithUser({
+        ...newComment,
+        user_id: $authStore.user?.id,
+        title: '',
+        likes: 0,
+        dislikes: 0
+      })];
+
+      // Reset form
+      newCommentText = "";
+      newCommentRating = null;
+    } catch (err) {
+      console.error("Error submitting comment:", err);
+      if (err.message.includes('fetch')) {
+        submitError = "Network error. Please check if the backend server is running.";
+      } else {
+        submitError = err.message || "Failed to submit comment. Please try again.";
+      }
+    } finally {
+      isSubmitting = false;
+    }
+  }
+
   onMount(() => {
     if (!browser) return;
 
@@ -156,10 +227,50 @@
               <h3 class="text-lg font-semibold text-[var(--color-text-primary)]">Add Your Review</h3>
               {#if $authStore.isLoggedIn}
                 <div class="space-y-4">
-                  <input class="w-full border border-[var(--color-border)] rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent" placeholder="Title" />
-                  <textarea class="w-full border border-[var(--color-border)] rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent" placeholder="Write your review..." rows="4"></textarea>
-                  <button class="w-full px-4 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary)] transition-colors">
-                    Submit Review
+                  {#if submitError}
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
+                      {submitError}
+                    </div>
+                  {/if}
+                  
+                  <!-- Rating (required) -->
+                  <div class="space-y-2">
+                    <div class="text-sm font-medium text-gray-700">
+                      Rating <span class="text-red-500">*</span>
+                    </div>
+                    <div class="flex gap-1" role="group" aria-label="Rating">
+                      {#each [1, 2, 3, 4, 5] as rating}
+                        <button
+                          type="button"
+                          class="transition-transform hover:scale-110"
+                          on:click={() => newCommentRating = rating}
+                        >
+                          <span class="text-2xl {rating <= (newCommentRating || 0) ? 'text-yellow-400' : 'text-gray-300'}">
+                            ★
+                          </span>
+                        </button>
+                      {/each}
+                    </div>
+                    {#if submitError && submitError.includes('rating')}
+                      <p class="text-sm text-red-600">{submitError}</p>
+                    {/if}
+                  </div>
+
+                  <!-- Comment Text -->
+                  <textarea 
+                    bind:value={newCommentText}
+                    class="w-full border border-[var(--color-border)] rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent" 
+                    placeholder="Write your review..." 
+                    rows="4"
+                    disabled={isSubmitting}
+                  ></textarea>
+                  
+                  <button 
+                    class="w-full px-4 py-3 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    on:click={submitComment}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit Review"}
                   </button>
                 </div>
               {:else}
@@ -195,7 +306,6 @@
                       </div>
                     </div>
 
-                    <h4 class="mb-2 font-medium text-gray-900">{c.title}</h4>
                     <p class="mb-3 text-sm text-gray-600">{c.text}</p>
 
                     <div class="flex items-center gap-4 text-sm text-gray-500">

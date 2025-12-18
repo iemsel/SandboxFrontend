@@ -62,9 +62,16 @@ export function removeFavorite(ideaId, token) {
   });
 }
 
-// get by id
+// GET /ideas/:id - get idea by id (includes comments)
 export async function getIdeaById(id) {
-  const ideas = await listIdeas();
+  return apiFetch(`/ideas/${id}`);
+}
 
-  return ideas.find((idea) => String(idea.id) === String(id));
+// POST /ideas/:id/comments - add a comment (protected)
+export function addComment(ideaId, { text, rating }, token) {
+  return apiFetch(`/ideas/${ideaId}/comments`, {
+    method: 'POST',
+    token,
+    body: { text, rating },
+  });
 }
