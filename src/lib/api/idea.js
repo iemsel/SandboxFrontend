@@ -78,7 +78,16 @@ export function removeFavorite(ideaId, token) {
   });
 }
 
-// GET /ideas/:id 
-export function getIdeaById(id, token) {
-  return apiFetch(`/ideas/${id}`, { token });
+// GET /ideas/:id - get idea by id (includes comments)
+export async function getIdeaById(id) {
+  return apiFetch(`/ideas/${id}`);
+}
+
+// POST /ideas/:id/comments - add a comment (protected)
+export function addComment(ideaId, { text, rating }, token) {
+  return apiFetch(`/ideas/${ideaId}/comments`, {
+    method: 'POST',
+    token,
+    body: { text, rating },
+  });
 }
