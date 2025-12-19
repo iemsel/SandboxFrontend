@@ -37,7 +37,8 @@ export async function load({ params }) {
 
     subject: raw.subject,
     season: raw.season,
-    yard_context: raw.yard_context
+    yard_context: raw.yard_context,
+    isFavorited: raw.isFavorited || false
   };
 
   // Include comments from the API response

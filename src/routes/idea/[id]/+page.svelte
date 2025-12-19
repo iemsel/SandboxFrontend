@@ -4,7 +4,8 @@
   import { authStore } from "$lib/api/authStore.js";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
-  import { addComment, toggleCommentLike, toggleCommentDislike, getIdeaById } from "$lib/api/idea.js";
+  import { addComment, toggleCommentLike, toggleCommentDislike, getIdeaById, addFavorite, removeFavorite } from "$lib/api/idea.js";
+  import { Heart } from "@lucide/svelte";
   import { browser } from '$app/environment';
   import { onMount, onDestroy } from 'svelte';
 
@@ -13,6 +14,10 @@
   // Data from server
   export let data;
   const { idea } = data;
+  
+  // Favorite state
+  let isFavorited = data.idea?.isFavorited || false;
+  let isTogglingFavorite = false;
   
   // Helper function to map comment with user info
   // Comments now come with userName from the backend, so we just use that
@@ -146,6 +151,38 @@
     }
   }
 
+  // Toggle favorite
+  async function toggleFavorite() {
+    if (!$authStore.isLoggedIn) {
+      // Redirect to login with return URL
+      goto(`/login?returnUrl=${encodeURIComponent($page.url.pathname)}`);
+      return;
+    }
+
+    const token = getToken();
+    if (!token) {
+      submitError = "Authentication token not found. Please log in again.";
+      return;
+    }
+
+    isTogglingFavorite = true;
+
+    try {
+      if (isFavorited) {
+        await removeFavorite(idea.id, token);
+        isFavorited = false;
+      } else {
+        await addFavorite(idea.id, token);
+        isFavorited = true;
+      }
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+      submitError = err.message || "Failed to update favorite. Please try again.";
+    } finally {
+      isTogglingFavorite = false;
+    }
+  }
+
   // Fetch user reactions when page loads (if logged in)
   async function fetchUserReactions() {
     if (!$authStore.isLoggedIn || !browser) return;
@@ -157,16 +194,23 @@
       // Re-fetch the idea with token to get user reactions
       const raw = await getIdeaById(idea.id, token);
       
-      if (raw && raw.comments) {
+      if (raw) {
+        // Update favorite status
+        if (raw.isFavorited !== undefined) {
+          isFavorited = raw.isFavorited;
+        }
+        
         // Update comments with user reactions and user names from backend
-        comments = raw.comments.map(comment => {
-          return mapCommentWithUser({
-            ...comment,
-            user_id: comment.user_id,
-            userName: comment.userName || null, // Backend provides userName
-            userReaction: comment.userReaction || null
+        if (raw.comments) {
+          comments = raw.comments.map(comment => {
+            return mapCommentWithUser({
+              ...comment,
+              user_id: comment.user_id,
+              userName: comment.userName || null, // Backend provides userName
+              userReaction: comment.userReaction || null
+            });
           });
-        });
+        }
       }
     } catch (err) {
       console.error("Error fetching user reactions:", err);
@@ -407,8 +451,18 @@
 
         <!-- RIGHT COLUMN -->
         <div class="space-y-6">
-          <div class="border border-[var(--color-border)] rounded-lg overflow-hidden bg-white">
+          <div class="border border-[var(--color-border)] rounded-lg overflow-hidden bg-white relative">
             <img src={idea.imageUrl} alt={idea.title} class="w-full h-96 object-cover" />
+            <div class="absolute right-3 top-3 print:hidden">
+              <button
+                class="rounded-full bg-white/80 backdrop-blur-sm p-2 transition-colors hover:bg-white shadow-md hover:shadow-lg {isFavorited ? 'text-red-500' : 'text-gray-600'}"
+                on:click={toggleFavorite}
+                disabled={isTogglingFavorite}
+                title={$authStore.isLoggedIn ? (isFavorited ? 'Remove from favorites' : 'Save to favorites') : 'Please log in to save ideas'}
+              >
+                <Heart class="h-5 w-5 {isFavorited ? 'fill-red-500' : ''}" />
+              </button>
+            </div>
           </div>
 
           <div class="border border-[var(--color-border)] rounded-lg p-6 bg-white space-y-6 ratings-panel">
