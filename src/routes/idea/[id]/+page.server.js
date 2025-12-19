@@ -41,12 +41,12 @@ export async function load({ params }) {
   };
 
   // Include comments from the API response
-  // Comments only have user_id, not user info, so we'll use generic names
+  // Comments now include userName from the backend
   const comments = (raw.comments || []).map(comment => ({
     id: comment.id,
     user_id: comment.user_id,
-    name: 'User', // Generic name since we don't have user info
-    avatar: 'U',
+    name: comment.userName || 'User', // Use userName from backend, fallback to 'User'
+    avatar: comment.userName ? comment.userName.charAt(0).toUpperCase() : 'U',
     rating: comment.rating || 0,
     title: '', // Comments don't have titles in the DB
     text: comment.text,

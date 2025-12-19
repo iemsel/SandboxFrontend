@@ -15,16 +15,16 @@
   const { idea } = data;
   
   // Helper function to map comment with user info
+  // Comments now come with userName from the backend, so we just use that
   function mapCommentWithUser(comment) {
-    const isCurrentUser = comment.user_id === $authStore.user?.id;
+    // Use userName from backend if available, otherwise use 'User'
+    const name = comment.userName || comment.name || 'User';
+    const avatar = name !== 'User' ? name.charAt(0).toUpperCase() : 'U';
+    
     return {
       ...comment,
-      name: isCurrentUser 
-        ? ($authStore.user?.name || 'You')
-        : 'User',
-      avatar: isCurrentUser
-        ? ($authStore.user?.name ? $authStore.user.name.charAt(0).toUpperCase() : 'U')
-        : 'U',
+      name,
+      avatar,
       userReaction: comment.userReaction || null // Track user's reaction
     };
   }
@@ -85,9 +85,11 @@
       const newComment = await addComment(idea.id, body, token);
 
       // Add the new comment to the list with user info
+      // Backend now includes userName, so we can use it directly
       comments = [...comments, mapCommentWithUser({
         ...newComment,
         user_id: $authStore.user?.id,
+        userName: $authStore.user?.name || null, // Backend should provide this, but include as fallback
         title: '',
         likes: 0,
         dislikes: 0,
@@ -156,14 +158,12 @@
       const raw = await getIdeaById(idea.id, token);
       
       if (raw && raw.comments) {
-        // Update comments with user reactions, preserving existing display names
+        // Update comments with user reactions and user names from backend
         comments = raw.comments.map(comment => {
-          const existingComment = comments.find(c => c.id === comment.id);
           return mapCommentWithUser({
             ...comment,
             user_id: comment.user_id,
-            name: existingComment?.name || 'User',
-            avatar: existingComment?.avatar || 'U',
+            userName: comment.userName || null, // Backend provides userName
             userReaction: comment.userReaction || null
           });
         });
