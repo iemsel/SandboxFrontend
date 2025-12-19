@@ -4,7 +4,7 @@
   import { authStore } from "$lib/api/authStore.js";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
-  import { addComment, toggleCommentLike, toggleCommentDislike } from "$lib/api/idea.js";
+  import { addComment, toggleCommentLike, toggleCommentDislike, getIdeaById } from "$lib/api/idea.js";
   import { browser } from '$app/environment';
   import { onMount, onDestroy } from 'svelte';
 
@@ -127,15 +127,50 @@
         ? await toggleCommentLike(commentId, token)
         : await toggleCommentDislike(commentId, token);
 
-      // Update the comment in the list
+      // Update the comment in the list, preserving all other properties
       comments = comments.map(c => 
         c.id === commentId 
-          ? { ...c, likes: result.likes, dislikes: result.dislikes, userReaction: result.userReaction }
+          ? { 
+              ...c, 
+              likes: result.likes, 
+              dislikes: result.dislikes, 
+              userReaction: result.userReaction // This will be 'like', 'dislike', or null
+            }
           : c
       );
     } catch (err) {
       console.error(`Error toggling ${reactionType}:`, err);
       submitError = err.message || `Failed to ${reactionType} comment. Please try again.`;
+    }
+  }
+
+  // Fetch user reactions when page loads (if logged in)
+  async function fetchUserReactions() {
+    if (!$authStore.isLoggedIn || !browser) return;
+    
+    const token = getToken();
+    if (!token) return;
+
+    try {
+      // Re-fetch the idea with token to get user reactions
+      const raw = await getIdeaById(idea.id, token);
+      
+      if (raw && raw.comments) {
+        // Update comments with user reactions, preserving existing display names
+        comments = raw.comments.map(comment => {
+          const existingComment = comments.find(c => c.id === comment.id);
+          return mapCommentWithUser({
+            ...comment,
+            user_id: comment.user_id,
+            name: existingComment?.name || 'User',
+            avatar: existingComment?.avatar || 'U',
+            userReaction: comment.userReaction || null
+          });
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching user reactions:", err);
+      // Don't show error to user, just silently fail
     }
   }
 
@@ -150,6 +185,9 @@
       main.classList.remove('max-w-6xl', 'mx-auto');
       main.classList.add('w-full', 'max-w-none');
     }
+
+    // Fetch user reactions after page loads
+    fetchUserReactions();
   });
 
   onDestroy(() => {
@@ -342,22 +380,22 @@
 
                     <div class="flex items-center gap-4 text-sm">
                       <button
-                        class="flex items-center gap-1 px-2 py-1 rounded transition-colors {c.userReaction === 'like' ? 'bg-green-100 text-green-700' : 'text-gray-500 hover:bg-gray-100'}"
+                        class="flex items-center gap-1 px-2 py-1 rounded transition-colors font-medium {c.userReaction === 'like' ? 'bg-green-100 text-green-700 border border-green-300' : 'text-gray-500 hover:bg-gray-100 border border-transparent'}"
                         on:click={() => handleReaction(c.id, 'like')}
                         disabled={!$authStore.isLoggedIn}
-                        title={$authStore.isLoggedIn ? 'Like this comment' : 'Please log in to like comments'}
+                        title={$authStore.isLoggedIn ? (c.userReaction === 'like' ? 'Remove like' : 'Like this comment') : 'Please log in to like comments'}
                       >
-                        <span>👍</span>
-                        <span>{c.likes}</span>
+                        <span class="text-base">👍</span>
+                        <span class="font-semibold">{c.likes}</span>
                       </button>
                       <button
-                        class="flex items-center gap-1 px-2 py-1 rounded transition-colors {c.userReaction === 'dislike' ? 'bg-red-100 text-red-700' : 'text-gray-500 hover:bg-gray-100'}"
+                        class="flex items-center gap-1 px-2 py-1 rounded transition-colors font-medium {c.userReaction === 'dislike' ? 'bg-red-100 text-red-700 border border-red-300' : 'text-gray-500 hover:bg-gray-100 border border-transparent'}"
                         on:click={() => handleReaction(c.id, 'dislike')}
                         disabled={!$authStore.isLoggedIn}
-                        title={$authStore.isLoggedIn ? 'Dislike this comment' : 'Please log in to dislike comments'}
+                        title={$authStore.isLoggedIn ? (c.userReaction === 'dislike' ? 'Remove dislike' : 'Dislike this comment') : 'Please log in to dislike comments'}
                       >
-                        <span>👎</span>
-                        <span>{c.dislikes}</span>
+                        <span class="text-base">👎</span>
+                        <span class="font-semibold">{c.dislikes}</span>
                       </button>
                     </div>
                   </div>
