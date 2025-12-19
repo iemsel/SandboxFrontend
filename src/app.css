@@ -1,3 +1,92 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@media print {
+    /* Hide non-printable elements */
+    button,
+    nav,
+    .comments-section,
+    .ratings-panel,
+    .header-actions,
+    .find-similar,
+    .personalize,
+    [class*="fixed"] {
+      display: none !important;
+    }
+
+    /* Create a print layout grid */
+    :global(.grid) {
+      display: grid !important;
+      grid-template-areas: 
+        "title image"
+        "meta image"
+        "content image"
+        "tools image"
+        "instructions instructions";
+      grid-template-columns: 1fr 200px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    /* Position the image in top right */
+    :global(.right-column) {
+      grid-area: image;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 1px solid #ddd !important;
+      width: 200px !important;
+      height: auto !important;
+    }
+
+    /* Make the image smaller */
+    :global(.right-column img) {
+      width: 100% !important;
+      height: auto !important;
+      max-height: 250px !important;
+      object-fit: contain !important;
+    }
+
+    /* Remove the ratings panel from print */
+    :global(.right-column > :nth-child(2)) {
+      display: none !important;
+    }
+
+    /* Position other sections */
+    :global(h1) {
+      grid-area: title;
+      margin-bottom: 8px !important;
+    }
+
+    :global(.flex-wrap) {
+      grid-area: meta;
+      margin-bottom: 16px !important;
+    }
+
+    :global(.tools-section) {
+      grid-area: tools;
+    }
+
+    :global(.instructions-section) {
+      grid-area: instructions;
+      page-break-before: avoid !important;
+    }
+
+    /* Ensure text is black for printing */
+    * {
+      color: black !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Remove background colors */
+    .bg-white,
+    [class*="bg-["] {
+      background: transparent !important;
+    }
+
+    /* Add border to separate sections */
+    .border {
+      border: 1px solid #eee !important;
+    }
+  }
