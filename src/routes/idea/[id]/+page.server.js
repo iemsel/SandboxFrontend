@@ -26,14 +26,9 @@ export async function load({ params }) {
 
     tags: raw.tags ?? [],
 
-    // ratings (not in db rn)
-    ratings: {
-      fun: null,
-      learning: null,
-      difficulty: null,
-      setup: null,
-      time: null
-    },
+    // Average rating from comments
+    avgRating: raw.avg_rating ? Number(raw.avg_rating) : null,
+    ratingCount: raw.rating_count || 0,
 
     subject: raw.subject,
     season: raw.season,
