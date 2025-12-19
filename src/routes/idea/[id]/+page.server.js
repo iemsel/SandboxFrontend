@@ -50,8 +50,9 @@ export async function load({ params }) {
     rating: comment.rating || 0,
     title: '', // Comments don't have titles in the DB
     text: comment.text,
-    likes: 0, // Not in DB yet
-    dislikes: 0, // Not in DB yet
+    likes: comment.likes || 0,
+    dislikes: comment.dislikes || 0,
+    userReaction: comment.userReaction || null, // User's reaction if logged in
     created_at: comment.created_at
   }));
 

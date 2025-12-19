@@ -26,11 +26,14 @@ export async function apiFetch(path, options = {}) {
     });
 
     if (!res.ok) {
+      // Read response as text first (can only read body once)
+      const text = await res.text();
       let errorBody;
       try {
-        errorBody = await res.json();
+        errorBody = JSON.parse(text);
       } catch {
-        errorBody = { error: await res.text() };
+        // Not JSON, use text as error message
+        errorBody = { error: text || `Request failed with ${res.status}` };
       }
       console.error('API error', res.status, errorBody);
       throw new Error(errorBody.error || `Request failed with ${res.status}`);
@@ -39,7 +42,15 @@ export async function apiFetch(path, options = {}) {
     // 204 No Content → no JSON
     if (res.status === 204) return null;
 
-    return res.json();
+    // Read response as text first, then parse JSON
+    const text = await res.text();
+    if (!text) return null;
+    try {
+      return JSON.parse(text);
+    } catch {
+      // If it's not JSON, return the text
+      return text;
+    }
   } catch (err) {
     // Re-throw if it's already our custom error
     if (err.message && !err.message.includes('fetch') && !err.message.includes('connect')) {

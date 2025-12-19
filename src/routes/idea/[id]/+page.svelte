@@ -4,7 +4,7 @@
   import { authStore } from "$lib/api/authStore.js";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
-  import { addComment } from "$lib/api/idea.js";
+  import { addComment, toggleCommentLike, toggleCommentDislike } from "$lib/api/idea.js";
   import { browser } from '$app/environment';
   import { onMount, onDestroy } from 'svelte';
 
@@ -24,7 +24,8 @@
         : 'User',
       avatar: isCurrentUser
         ? ($authStore.user?.name ? $authStore.user.name.charAt(0).toUpperCase() : 'U')
-        : 'U'
+        : 'U',
+      userReaction: comment.userReaction || null // Track user's reaction
     };
   }
 
@@ -89,7 +90,8 @@
         user_id: $authStore.user?.id,
         title: '',
         likes: 0,
-        dislikes: 0
+        dislikes: 0,
+        userReaction: null
       })];
 
       // Reset form
@@ -104,6 +106,36 @@
       }
     } finally {
       isSubmitting = false;
+    }
+  }
+
+  // Handle like/dislike toggle
+  async function handleReaction(commentId, reactionType) {
+    if (!$authStore.isLoggedIn) {
+      submitError = "Please log in to like or dislike comments";
+      return;
+    }
+
+    const token = getToken();
+    if (!token) {
+      submitError = "Authentication token not found. Please log in again.";
+      return;
+    }
+
+    try {
+      const result = reactionType === 'like' 
+        ? await toggleCommentLike(commentId, token)
+        : await toggleCommentDislike(commentId, token);
+
+      // Update the comment in the list
+      comments = comments.map(c => 
+        c.id === commentId 
+          ? { ...c, likes: result.likes, dislikes: result.dislikes, userReaction: result.userReaction }
+          : c
+      );
+    } catch (err) {
+      console.error(`Error toggling ${reactionType}:`, err);
+      submitError = err.message || `Failed to ${reactionType} comment. Please try again.`;
     }
   }
 
@@ -308,9 +340,25 @@
 
                     <p class="mb-3 text-sm text-gray-600">{c.text}</p>
 
-                    <div class="flex items-center gap-4 text-sm text-gray-500">
-                      <span>👍 {c.likes}</span>
-                      <span>👎 {c.dislikes}</span>
+                    <div class="flex items-center gap-4 text-sm">
+                      <button
+                        class="flex items-center gap-1 px-2 py-1 rounded transition-colors {c.userReaction === 'like' ? 'bg-green-100 text-green-700' : 'text-gray-500 hover:bg-gray-100'}"
+                        on:click={() => handleReaction(c.id, 'like')}
+                        disabled={!$authStore.isLoggedIn}
+                        title={$authStore.isLoggedIn ? 'Like this comment' : 'Please log in to like comments'}
+                      >
+                        <span>👍</span>
+                        <span>{c.likes}</span>
+                      </button>
+                      <button
+                        class="flex items-center gap-1 px-2 py-1 rounded transition-colors {c.userReaction === 'dislike' ? 'bg-red-100 text-red-700' : 'text-gray-500 hover:bg-gray-100'}"
+                        on:click={() => handleReaction(c.id, 'dislike')}
+                        disabled={!$authStore.isLoggedIn}
+                        title={$authStore.isLoggedIn ? 'Dislike this comment' : 'Please log in to dislike comments'}
+                      >
+                        <span>👎</span>
+                        <span>{c.dislikes}</span>
+                      </button>
                     </div>
                   </div>
                 </div>
