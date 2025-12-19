@@ -1,15 +1,42 @@
 <script>
   import Nav from "../../lib/components/Nav.svelte";
   import IdeaCard from "../../lib/components/IdeaCard.svelte";
-  import { authStore } from "$lib/api/authStore.js";
-  import { goto } from "$app/navigation";
-  import { page } from "$app/stores";
-  import { addComment, toggleCommentLike, toggleCommentDislike, getIdeaById, addFavorite, removeFavorite } from "$lib/api/idea.js";
-  import { Heart } from "@lucide/svelte";
+  import { authStore } from "$lib/api/authStore";
+
+  let showAI = false;
+
+  // Mock data 
+  export let data;
+  const { idea } = data;
+
+  let comments = [
+    {
+      name: "Jane Doe",
+      avatar: "JD",
+      rating: 5,
+      title: "Amazing activity!",
+      text: "My students loved this project.",
+      likes: 12,
+      dislikes: 0
+    },
+    {
+      name: "Mike Smith",
+      avatar: "MS",
+      rating: 4,
+      title: "Great outside",
+      text: "Kids learned a lot.",
+      likes: 8,
+      dislikes: 1
+    }
+  ];
+
   import { browser } from '$app/environment';
   import { onMount, onDestroy } from 'svelte';
 
   let showAI = false;
+
+# Environment variables
+.env.local
 
   // Data from server
   export let data;
@@ -283,11 +310,13 @@
 
           <!-- Action Buttons -->
           <div class="flex flex-wrap gap-3">
+            {#if $authStore.isLoggedIn}
             <a href={`/planner/${idea.id}`}
               class="px-4 py-2 rounded bg-[var(--color-primary)] cursor-pointer text-white font-medium hover:bg-[var(--color-primary)] transition-colors"
             >
               Plan
             </a>
+            {/if}
             <button class="px-4 py-2 rounded border border-[var(--color-border)] cursor-pointer font-medium hover:bg-[var(--color-border-light)] transition-colors">
               Find similar
             </button>

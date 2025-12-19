@@ -16,10 +16,6 @@ export default defineConfig({
 				target: API_GATEAWAY_URL,
 				changeOrigin: true,
 			},
-			'/planner': {
-				target: API_GATEAWAY_URL,
-				changeOrigin: true,
-			}
 		}
 	}
 });
