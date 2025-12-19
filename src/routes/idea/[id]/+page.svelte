@@ -466,34 +466,34 @@
           </div>
 
           <div class="border border-[var(--color-border)] rounded-lg p-6 bg-white space-y-6 ratings-panel">
-            <h3 class="text-lg font-semibold text-[var(--color-text-primary)]">Ratings</h3>
-            {#each Object.entries(idea.ratings) as [key, value]}
-              <div class="space-y-2">
-                <div class="flex justify-between text-sm">
-                  <span class="capitalize text-gray-700">{key}</span>
-
-                  {#if typeof value === 'number'}
-                    <span class="text-gray-600 font-medium">
-                      {value.toFixed(1)}/5
-                    </span>
-                  {:else}
-                    <span class="text-gray-400 italic">Not rated</span>
-                  {/if}
-                </div>
-
-                {#if typeof value === 'number'}
+            <h3 class="text-lg font-semibold text-[var(--color-text-primary)]">Rating</h3>
+            {#if idea.avgRating !== null && idea.avgRating > 0}
+              <div class="space-y-3">
+                <div class="flex items-center gap-3">
                   <div class="flex gap-1">
-                    {#each Array(Math.round(value)) as _}
-                      <span class="text-2xl text-yellow-400">★</span>
+                    {#each Array(Math.round(idea.avgRating)) as _}
+                      <span class="text-3xl text-yellow-400">★</span>
                     {/each}
-                    {#each Array(5 - Math.round(value)) as _}
-                      <span class="text-2xl text-gray-300">★</span>
+                    {#each Array(5 - Math.round(idea.avgRating)) as _}
+                      <span class="text-3xl text-gray-300">★</span>
                     {/each}
                   </div>
-                {/if}
+                  <div class="flex flex-col">
+                    <span class="text-2xl font-bold text-[var(--color-text-primary)]">
+                      {idea.avgRating.toFixed(1)}
+                    </span>
+                    <span class="text-sm text-gray-600">
+                      {idea.ratingCount} {idea.ratingCount === 1 ? 'rating' : 'ratings'}
+                    </span>
+                  </div>
+                </div>
               </div>
-            {/each}
-
+            {:else}
+              <div class="py-4 text-center">
+                <p class="text-gray-400 italic">No ratings yet</p>
+                <p class="text-sm text-gray-500 mt-2">Be the first to rate this idea!</p>
+              </div>
+            {/if}
           </div>
         </div>
       </div>
