@@ -1,36 +1,53 @@
 <script>
-  import { generateActivityIdeas } from "$lib/api/ai";
-
   let prompt = "";
   let messages = [];
   let loading = false;
 
+  const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
   async function handleSend() {
     if (!prompt.trim()) return;
 
-    // Add user message
     messages = [...messages, { role: "user", content: prompt }];
     loading = true;
 
     try {
-      const response = await generateActivityIdeas(prompt);
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: prompt }]
+              }
+            ]
+          })
+        }
+      );
 
-      // Add AI response
-      messages = [
-        ...messages,
-        {
-          role: "assistant",
-          content: response.text,
-          ideas: response.ideas
-        }
-      ];
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Gemini API error:", err);
+        throw new Error(err.error?.message ?? "Gemini API failed");
+      }
+
+      const data = await res.json();
+
+      const aiText =
+        data?.candidates?.[0]?.content?.parts?.[0]?.text ??
+        "No response from AI.";
+
+      messages = [...messages, { role: "assistant", content: aiText }];
     } catch (error) {
+      console.error("AI ERROR:", error);
       messages = [
         ...messages,
-        {
-          role: "assistant",
-          content: "Something went wrong while generating ideas. Please try again."
-        }
+        { role: "assistant", content: "AI error: " + error.message }
       ];
     }
 
@@ -38,6 +55,9 @@
     prompt = "";
   }
 </script>
+
+
+
 
 <!-- Page container -->
 <section class="min-h-screen bg-gradient-to-b from-white to-green-50">
