@@ -1,4 +1,6 @@
 <script>
+  import { marked } from "marked";
+
   let prompt = "";
   let messages = [];
   let loading = false;
@@ -80,7 +82,10 @@
               : "self-start bg-white border shadow-sm"
           }`}
         >
-          <p>{msg.content}</p>
+          <div class="prose prose-sm max-w-none">
+           {@html marked.parse(msg.content)}
+</div>
+
 
           <!-- Render generated ideas -->
           {#if msg.ideas}
