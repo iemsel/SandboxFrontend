@@ -13,7 +13,7 @@
 
     try {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${API_KEY}`,
         {
           method: "POST",
           headers: {
@@ -22,7 +22,6 @@
           body: JSON.stringify({
             contents: [
               {
-                role: "user",
                 parts: [{ text: prompt }]
               }
             ]
@@ -31,9 +30,8 @@
       );
 
       if (!res.ok) {
-        const err = await res.json();
-        console.error("Gemini API error:", err);
-        throw new Error(err.error?.message ?? "Gemini API failed");
+        const err = await res.text();
+        throw new Error(err);
       }
 
       const data = await res.json();
@@ -44,7 +42,7 @@
 
       messages = [...messages, { role: "assistant", content: aiText }];
     } catch (error) {
-      console.error("AI ERROR:", error);
+      console.error(error);
       messages = [
         ...messages,
         { role: "assistant", content: "AI error: " + error.message }
@@ -55,9 +53,6 @@
     prompt = "";
   }
 </script>
-
-
-
 
 <!-- Page container -->
 <section class="min-h-screen bg-gradient-to-b from-white to-green-50">
