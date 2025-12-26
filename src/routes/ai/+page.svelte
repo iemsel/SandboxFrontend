@@ -31,44 +31,82 @@
         }
       );
 
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err);
-      }
-
       const data = await res.json();
 
-      const aiText =
+      const rawText =
         data?.candidates?.[0]?.content?.parts?.[0]?.text ??
         "No response from AI.";
 
-      messages = [...messages, { role: "assistant", content: aiText }];
-    } catch (error) {
-      console.error(error);
       messages = [
         ...messages,
-        { role: "assistant", content: "AI error: " + error.message }
+        {
+          role: "assistant",
+          content: marked.parse(rawText),
+          raw: rawText
+        }
+      ];
+    } catch (error) {
+      messages = [
+        ...messages,
+        {
+          role: "assistant",
+          content: "AI error: " + error.message
+        }
       ];
     }
 
     loading = false;
     prompt = "";
   }
+
+    function saveIdea(rawText) {
+      const stored = JSON.parse(localStorage.getItem("ideas") || "[]");
+
+      // Example: attempt to detect difficulty/season/age from text
+      const difficulty = rawText.includes("easy") ? "easy" :
+                        rawText.includes("hard") ? "hard" : "medium";
+      const season = rawText.match(/spring|summer|fall|autumn|winter/i)?.[0] || "any";
+      const minAge = rawText.match(/\b\d+\b/) ? parseInt(rawText.match(/\b\d+\b/)[0]) : 0;
+      const maxAge = 18; // fallback
+      const subject = "general";
+      const weather = rawText.includes("indoor") ? "indoor" :
+                      rawText.includes("outdoor") ? "outdoor" : "any";
+
+      const idea = {
+        id: crypto.randomUUID(),
+        title: rawText.slice(0, 50),
+        description: rawText,
+        difficulty,
+        season,
+        min_age: minAge,
+        max_age: maxAge,
+        subject,
+        weather,
+        tags: [],
+        categories: [],
+        created_at: new Date().toISOString(),
+        rating: null,
+        source: "ai"
+      };
+
+      localStorage.setItem("ideas", JSON.stringify([idea, ...stored]));
+      alert("Idea saved!");
+    }
+
 </script>
 
-<!-- Page container -->
+<!-- Page -->
 <section class="min-h-screen bg-gradient-to-b from-white to-green-50">
   <div class="max-w-3xl mx-auto px-6 py-10 flex flex-col">
 
-    <!-- Title -->
+    <!-- Header -->
     <div class="text-center mb-10">
       <div class="mx-auto mb-4 w-14 h-14 flex items-center justify-center rounded-full bg-[var(--color-primary)] text-white text-2xl">
         ✨
       </div>
-      <h1 class="text-3xl font-bold mb-2">Generate Custom Activity Ideas</h1>
+      <h1 class="text-3xl font-bold mb-2">Generate Activity Ideas</h1>
       <p class="text-gray-600">
-        Describe what you're looking for, and I'll help you create personalized
-        eco-friendly activities for your students.
+        Describe what you need and save AI-generated ideas for later.
       </p>
     </div>
 
@@ -79,27 +117,22 @@
           class={`max-w-[80%] p-4 rounded-xl ${
             msg.role === "user"
               ? "self-end bg-[var(--color-primary)] text-white"
-              : "self-start bg-white border shadow-sm"
+              : "self-start bg-white border shadow-sm text-black"
           }`}
         >
-          <div class="prose prose-sm max-w-none">
-           {@html marked.parse(msg.content)}
-</div>
-
-
-          <!-- Render generated ideas -->
-          {#if msg.ideas}
-            <div class="mt-4 space-y-3">
-              {#each msg.ideas as idea}
-                <div class="border rounded-lg p-3 bg-gray-50">
-                  <h4 class="font-semibold">{idea.title}</h4>
-                  <p class="text-sm text-gray-600">{idea.description}</p>
-                  <p class="text-xs text-gray-500 mt-1">
-                    {idea.difficulty} · {idea.time_minutes} min · {idea.subject}
-                  </p>
-                </div>
-              {/each}
+          {#if msg.role === "assistant"}
+            <div class="prose prose-sm max-w-none">
+              {@html msg.content}
             </div>
+
+            <button
+              class="mt-3 text-sm text-[var(--color-primary)] underline"
+              on:click={() => saveIdea(msg.raw)}
+            >
+              Save idea
+            </button>
+          {:else}
+            <p>{msg.content}</p>
           {/if}
         </div>
       {/each}
@@ -111,7 +144,7 @@
       {/if}
     </div>
 
-    <!-- Input bar -->
+    <!-- Input -->
     <div class="sticky bottom-0 bg-white pt-4">
       <div class="flex items-center gap-3 border rounded-xl px-4 py-3 shadow-sm">
         <input
@@ -128,8 +161,9 @@
           ➤
         </button>
       </div>
+
       <p class="text-xs text-gray-400 text-center mt-3">
-        AI can make mistakes. Please verify the generated ideas before using them.
+        AI can make mistakes. Please review ideas before saving.
       </p>
     </div>
 

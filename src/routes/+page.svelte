@@ -14,9 +14,21 @@
   import FilterPanel from "./lib/components/FilterPanel.svelte";
   import { onMount } from "svelte";
 
-  onMount(() => {
-    handleApplyFilters({ detail: filters });
-  });
+    onMount(() => {
+      handleApplyFilters({ detail: filters });
+
+      const savedIdeas = JSON.parse(localStorage.getItem("ideas") || "[]");
+
+      if (savedIdeas.length) {
+        // Avoid duplicates (in case of refresh)
+        const existingIds = new Set(ideas.map(i => i.id));
+
+        const newIdeas = savedIdeas.filter(i => !existingIds.has(i.id));
+
+        ideas = [...newIdeas, ...ideas];
+      }
+    });
+
   
   let search = "";
   let selectedTag = "All";
