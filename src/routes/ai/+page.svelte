@@ -62,12 +62,11 @@
     function saveIdea(rawText) {
       const stored = JSON.parse(localStorage.getItem("ideas") || "[]");
 
-      // Example: attempt to detect difficulty/season/age from text
       const difficulty = rawText.includes("easy") ? "easy" :
                         rawText.includes("hard") ? "hard" : "medium";
       const season = rawText.match(/spring|summer|fall|autumn|winter/i)?.[0] || "any";
       const minAge = rawText.match(/\b\d+\b/) ? parseInt(rawText.match(/\b\d+\b/)[0]) : 0;
-      const maxAge = 18; // fallback
+      const maxAge = 18;
       const subject = "general";
       const weather = rawText.includes("indoor") ? "indoor" :
                       rawText.includes("outdoor") ? "outdoor" : "any";
