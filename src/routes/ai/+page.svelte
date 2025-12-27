@@ -65,6 +65,32 @@
     prompt = "";
   }
 
+      function extractTitle(rawText) {
+
+      const headingMatch = rawText.match(/^#{1,3}\s*(.+)$/m);
+      if (headingMatch) {
+        return headingMatch[1].trim().slice(0, 80);
+      }
+
+      const sentences = rawText
+        .replace(/[#*_]/g, "")
+        .split(/[.!?]\s/)
+        .map(s => s.trim())
+        .filter(s =>
+          s.length > 10 &&
+          s.length < 80 &&
+          !s.toLowerCase().startsWith("here's") &&
+          !s.toLowerCase().startsWith("this activity") &&
+          !s.toLowerCase().startsWith("below is")
+        );
+
+      if (sentences.length > 0) {
+        return sentences[0];
+      }
+
+      return "AI Generated Activity";
+    }
+
     function parseIdeaMetadata(rawText) {
       const text = rawText.toLowerCase();
 
@@ -121,7 +147,6 @@
       };
     }
 
-
     function saveIdea(rawText) {
       const stored = JSON.parse(localStorage.getItem("ideas") || "[]");
 
@@ -129,7 +154,7 @@
 
       const idea = {
         id: crypto.randomUUID(),
-        title: rawText.split("\n")[0].replace(/[#*]/g, "").slice(0, 80),
+        title: extractTitle(rawText),
         description: rawText,
 
         difficulty: meta.difficulty,
@@ -154,6 +179,9 @@
       toastType = "success";
       showToast = true;
     }
+
+
+
 
 
 </script>
