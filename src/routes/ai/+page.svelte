@@ -91,6 +91,24 @@
       return "AI Generated Activity";
     }
 
+    function extractTitleFromMarkdown(text = "") {
+      const headingMatch = text.match(/^#{1,6}\s+(.*)$/m);
+      if (headingMatch) return headingMatch[1].trim();
+
+      return text
+        .replace(/[#*_>`~-]/g, "")
+        .split("\n")[0]
+        .slice(0, 80)
+        .trim();
+    }
+
+    function stripMarkdown(text = "") {
+      return text
+        .replace(/[#*_>`~-]/g, "")
+        .replace(/\n+/g, " ")
+        .trim();
+    }
+
     function parseIdeaMetadata(rawText) {
       const text = rawText.toLowerCase();
 
@@ -150,27 +168,33 @@
     function saveIdea(rawText) {
       const stored = JSON.parse(localStorage.getItem("ideas") || "[]");
 
-      const meta = parseIdeaMetadata(rawText);
+      const difficulty = rawText.match(/easy|medium|hard/i)?.[0]?.toLowerCase() ?? "medium";
+      const season = rawText.match(/spring|summer|fall|autumn|winter/i)?.[0]?.toLowerCase() ?? "any";
+      const minAge = rawText.match(/\b\d{1,2}\b/) ? parseInt(rawText.match(/\b\d{1,2}\b/)[0]) : 0;
+      const maxAge = 18;
+      const subject = "general";
+      const weather =
+        rawText.match(/indoor|outdoor/i)?.[0]?.toLowerCase() ?? "any";
 
       const idea = {
         id: crypto.randomUUID(),
-        title: extractTitle(rawText),
-        description: rawText,
+        title: extractTitleFromMarkdown(rawText),
+        description: stripMarkdown(rawText),
 
-        difficulty: meta.difficulty,
-        season: meta.season,
-        subject: meta.subject,
-        weather: meta.weather,
-        yard: meta.yard,
-
-        min_age: meta.min_age,
-        max_age: meta.max_age,
+        difficulty,
+        season,
+        min_age: minAge,
+        max_age: maxAge,
+        subject,
+        weather,
 
         tags: [],
         categories: [],
         created_at: new Date().toISOString(),
         rating: null,
-        source: "ai"
+        source: "ai",
+
+        raw_markdown: rawText
       };
 
       localStorage.setItem("ideas", JSON.stringify([idea, ...stored]));
@@ -179,11 +203,6 @@
       toastType = "success";
       showToast = true;
     }
-
-
-
-
-
 </script>
 
 <!-- Page -->
