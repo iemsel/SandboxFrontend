@@ -1,9 +1,15 @@
 <script>
+  import Toast from "../lib/components/Toast.svelte";
   import { marked } from "marked";
 
   let prompt = "";
   let messages = [];
   let loading = false;
+
+  let showToast = false;
+  let toastMessage = "";
+  let toastType = "success";
+
 
   const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
@@ -89,7 +95,11 @@
       };
 
       localStorage.setItem("ideas", JSON.stringify([idea, ...stored]));
-      alert("Idea saved!");
+
+      toastMessage = "Idea saved successfully!";
+      toastType = "success";
+      showToast = true;
+
     }
 
 </script>
@@ -165,6 +175,13 @@
         AI can make mistakes. Please review ideas before saving.
       </p>
     </div>
+
+    <!-- Saved Notification/Toast -->
+      <Toast
+        bind:visible={showToast}
+        message={toastMessage}
+        type={toastType}
+      />
 
   </div>
 </section>
