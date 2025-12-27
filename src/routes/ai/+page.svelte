@@ -65,28 +65,82 @@
     prompt = "";
   }
 
+    function parseIdeaMetadata(rawText) {
+      const text = rawText.toLowerCase();
+
+      // Difficulty
+      let difficulty = "Medium";
+      if (text.includes("easy")) difficulty = "Easy";
+      if (text.includes("hard")) difficulty = "Hard";
+
+      // Season
+      let season = null;
+      if (text.includes("spring")) season = "Spring";
+      else if (text.includes("summer")) season = "Summer";
+      else if (text.includes("fall") || text.includes("autumn")) season = "Fall";
+      else if (text.includes("winter")) season = "Winter";
+
+      // Subject
+      let subject = null;
+      if (text.includes("math")) subject = "Math";
+      else if (text.includes("science")) subject = "Science";
+      else if (text.includes("art")) subject = "Arts";
+      else if (text.includes("language") || text.includes("reading"))
+        subject = "Language";
+
+      // Weather
+      let weather = null;
+      if (text.includes("sunny")) weather = "Sunny";
+      else if (text.includes("rain")) weather = "Rainy";
+      else if (text.includes("snow")) weather = "Snowy";
+      else if (text.includes("cloud")) weather = "Cloudy";
+
+      // Indoor / Outdoor → yard (optional)
+      let yard = null;
+      if (text.includes("indoor")) yard = "Indoor";
+      else if (text.includes("outdoor")) yard = "Outdoor";
+
+      // Age
+      const ageMatch = text.match(/(\d+)\s*[-–to]+\s*(\d+)/);
+      let minAge = 0;
+      let maxAge = 18;
+
+      if (ageMatch) {
+        minAge = parseInt(ageMatch[1]);
+        maxAge = parseInt(ageMatch[2]);
+      }
+
+      return {
+        difficulty,
+        season,
+        subject,
+        weather,
+        yard,
+        min_age: minAge,
+        max_age: maxAge
+      };
+    }
+
+
     function saveIdea(rawText) {
       const stored = JSON.parse(localStorage.getItem("ideas") || "[]");
 
-      const difficulty = rawText.includes("easy") ? "easy" :
-                        rawText.includes("hard") ? "hard" : "medium";
-      const season = rawText.match(/spring|summer|fall|autumn|winter/i)?.[0] || "any";
-      const minAge = rawText.match(/\b\d+\b/) ? parseInt(rawText.match(/\b\d+\b/)[0]) : 0;
-      const maxAge = 18;
-      const subject = "general";
-      const weather = rawText.includes("indoor") ? "indoor" :
-                      rawText.includes("outdoor") ? "outdoor" : "any";
+      const meta = parseIdeaMetadata(rawText);
 
       const idea = {
         id: crypto.randomUUID(),
-        title: rawText.slice(0, 50),
+        title: rawText.split("\n")[0].replace(/[#*]/g, "").slice(0, 80),
         description: rawText,
-        difficulty,
-        season,
-        min_age: minAge,
-        max_age: maxAge,
-        subject,
-        weather,
+
+        difficulty: meta.difficulty,
+        season: meta.season,
+        subject: meta.subject,
+        weather: meta.weather,
+        yard: meta.yard,
+
+        min_age: meta.min_age,
+        max_age: meta.max_age,
+
         tags: [],
         categories: [],
         created_at: new Date().toISOString(),
@@ -99,8 +153,8 @@
       toastMessage = "Idea saved successfully!";
       toastType = "success";
       showToast = true;
-
     }
+
 
 </script>
 
