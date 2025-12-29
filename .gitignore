@@ -17,5 +17,5 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 # Environment variables
-.env
+.env.local
 
