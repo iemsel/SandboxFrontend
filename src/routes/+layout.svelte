@@ -1,12 +1,26 @@
 <script>
   import "../app.css";
   import Nav from "./lib/components/Nav.svelte";
+  import { authStore } from "$lib/api/authStore.js";
+  import { getStoredUser } from "$lib/api/auth.js";
+  
   let { children } = $props();
+
+  // Initialize the store from local storage on application load
+  $effect(() => {
+    // Check for window to ensure this only runs client-side after initial SSR
+    if (typeof window !== 'undefined') {
+        const storedUser = getStoredUser();
+        authStore.initialize(storedUser);
+    }
+  });
+
 </script>
-<style>
+<style global>
   :root {
     /* Primary Colors */
     --color-primary: #46826b;
+    /* ... (rest of your colors) ... */
     --color-primary-light: #b3f2da;
     --color-primary-dark: #2f5c48;
 

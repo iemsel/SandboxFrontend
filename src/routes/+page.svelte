@@ -14,22 +14,33 @@
   import FilterPanel from "./lib/components/FilterPanel.svelte";
   import { onMount } from "svelte";
 
-    onMount(() => {
-      handleApplyFilters({ detail: filters });
+  onMount(() => {
+    handleApplyFilters({ detail: filters });
+  });
 
-      const savedIdeas = JSON.parse(localStorage.getItem("ideas") || "[]");
+  const QUICK_FILTERS = {
+    All: {
+      minAge: 0,
+      maxAge: 18,
+      minDuration: 0,
+      maxDuration: 120,
+      difficulty: null,
+    },
 
-      if (savedIdeas.length) {
-        // Avoid duplicates (in case of refresh)
-        const existingIds = new Set(ideas.map(i => i.id));
+    Popular: {
+      // placeholder for later when rating works
+    },
 
-        const newIdeas = savedIdeas.filter(i => !existingIds.has(i.id));
+    "Quick and Easy": {
+      maxDuration: 30,
+      difficulty: "Easy",
+    },
 
-        ideas = [...newIdeas, ...ideas];
-      }
-    });
+    Challenge: {
+      difficulty: "Hard",
+    },
+  };
 
-  
   let search = "";
   let selectedTag = "All";
 
@@ -67,7 +78,7 @@
   }
 
   //Filter
-  let filters = {
+  const BASE_FILTERS = {
     difficulty: null,
     season: null,
     yard: null,
@@ -77,26 +88,37 @@
     categories: [],
     minAge: 0,
     maxAge: 18,
+    minDuration: 0,
+    maxDuration: 120,
   };
+  let filters = { ...BASE_FILTERS };
 
   function handleApplyFilters(e) {
     filters = e.detail;
     showFilter = false;
   }
 
+  function applyQuickFilter(tab) {
+    selectedTag = tab;
+
+    if (tab === "All") {
+      filters = { ...BASE_FILTERS };
+      return;
+    }
+
+    const preset = QUICK_FILTERS[tab];
+    if (!preset) return;
+
+    filters = {
+      ...BASE_FILTERS,
+      ...preset,
+    };
+  }
+
   $: filteredIdeas = ideas.filter((idea) => {
     const matchesSearch = idea.title
       .toLowerCase()
       .includes(search.toLowerCase());
-
-    //  Quick filters for later when ratings works
-    // const matchesTag =
-    //   selectedTag === "All" ||
-    //   (selectedTag === "Popular"
-    //     ? idea.rating >= 4
-    //     : idea.tags
-    //         ?.map((t) => t.toLowerCase())
-    //         .includes(selectedTag.toLowerCase()));
 
     const matchesDifficulty =
       !filters.difficulty ||
@@ -116,6 +138,10 @@
     const matchesAge =
       idea.max_age >= filters.minAge && idea.min_age <= filters.maxAge;
 
+    const matchesDuration =
+      idea.time_minutes >= filters.minDuration &&
+      idea.time_minutes <= filters.maxDuration;
+
     const matchesSubject =
       !filters.subject ||
       (idea.subject &&
@@ -132,7 +158,8 @@
       matchesSeason &&
       matchesAge &&
       matchesSubject &&
-      matchesWeather
+      matchesWeather &&
+      matchesDuration
     );
   });
 
@@ -187,14 +214,14 @@
 
   <!-- Category Tabs -->
   <div class="flex items-center gap-3 mb-8">
-    {#each ["All", "Popular", "DIY", "Competition", "Group Project"] as tab}
+    {#each ["All", "Popular", "Quick and Easy", "Challenge"] as tab}
       <button
         class={`px-4 py-2 rounded ${
           selectedTag === tab
             ? "bg-[var(--color-primary)] text-white"
             : "bg-white"
         }`}
-        on:click={() => (selectedTag = tab)}
+        on:click={() => applyQuickFilter(tab)}
       >
         {tab}
       </button>
