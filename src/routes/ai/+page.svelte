@@ -64,7 +64,7 @@
     loading = false;
     prompt = "";
   }
-
+      //extracts the tile of the ideea as the main title idea once saved
       function extractTitle(rawText) {
 
       const headingMatch = rawText.match(/^#{1,3}\s*(.+)$/m);
@@ -91,6 +91,7 @@
       return "AI Generated Activity";
     }
 
+    //strips down the markdowns of the title of the idea once saved
     function extractTitleFromMarkdown(text = "") {
       const headingMatch = text.match(/^#{1,6}\s+(.*)$/m);
       if (headingMatch) return headingMatch[1].trim();
@@ -102,6 +103,7 @@
         .trim();
     }
 
+    //strips down the markdowns of the idea card once saved
     function stripMarkdown(text = "") {
       return text
         .replace(/[#*_>`~-]/g, "")
@@ -109,6 +111,7 @@
         .trim();
     }
 
+    //Automatically Generated filters through specific text once saved
     function parseIdeaMetadata(rawText) {
       const text = rawText.toLowerCase();
 
@@ -165,44 +168,61 @@
       };
     }
 
+    //generate the time of the idea once saved
+    function extractTime(rawText) {
+      // Try to find explicit time
+      const match = rawText.match(/(\d+)\s*(minutes|minute|min)/i);
+      if (match) return parseInt(match[1]);
+
+      // Fallback heuristic
+      if (rawText.includes("quick") || rawText.includes("short")) return 15;
+      if (rawText.includes("lesson") || rawText.includes("activity")) return 30;
+      if (rawText.includes("project")) return 45;
+
+      return 30; // safe default
+    }
+
+    //Saves the generated idea in the home page
     function saveIdea(rawText) {
       const stored = JSON.parse(localStorage.getItem("ideas") || "[]");
 
-      const difficulty = rawText.match(/easy|medium|hard/i)?.[0]?.toLowerCase() ?? "medium";
-      const season = rawText.match(/spring|summer|fall|autumn|winter/i)?.[0]?.toLowerCase() ?? "any";
-      const minAge = rawText.match(/\b\d{1,2}\b/) ? parseInt(rawText.match(/\b\d{1,2}\b/)[0]) : 0;
-      const maxAge = 18;
-      const subject = "general";
-      const weather =
-        rawText.match(/indoor|outdoor/i)?.[0]?.toLowerCase() ?? "any";
+      const cleanTitle = extractTitle(rawText);
+      const cleanDescription = stripMarkdown(rawText);
+
+      const meta = parseIdeaMetadata(rawText);
+      const timeMinutes = extractTime(rawText);
 
       const idea = {
         id: crypto.randomUUID(),
-        title: extractTitleFromMarkdown(rawText),
-        description: stripMarkdown(rawText),
+        title: cleanTitle,
+        description: cleanDescription,
 
-        difficulty,
-        season,
-        min_age: minAge,
-        max_age: maxAge,
-        subject,
-        weather,
+        difficulty: meta.difficulty,
+        season: meta.season ?? "any",
+        subject: meta.subject ?? "general",
+        weather: meta.weather ?? "any",
+        yard_context: meta.yard ?? "any",
+
+        min_age: meta.min_age,
+        max_age: meta.max_age,
+
+        time_minutes: timeMinutes,
+        time_label: `${timeMinutes} min`,
 
         tags: [],
         categories: [],
         created_at: new Date().toISOString(),
         rating: null,
-        source: "ai",
-
-        raw_markdown: rawText
+        source: "ai"
       };
 
-      localStorage.setItem("ideas", JSON.stringify([idea, ...stored]));
+  localStorage.setItem("ideas", JSON.stringify([idea, ...stored]));
 
-      toastMessage = "Idea saved successfully!";
-      toastType = "success";
-      showToast = true;
-    }
+  toastMessage = "Idea saved successfully!";
+  toastType = "success";
+  showToast = true;
+}
+
 </script>
 
 <!-- Page -->
