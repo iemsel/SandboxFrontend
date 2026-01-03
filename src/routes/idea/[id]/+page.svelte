@@ -8,8 +8,15 @@
   import { Heart } from "@lucide/svelte";
   import { browser } from '$app/environment';
   import { onMount, onDestroy } from 'svelte';
+  import { callGemini } from "$lib/api/gemini.js";
 
   let showAI = false;
+
+  // AI Assistant state
+  let aiMessages = [];
+  let aiInput = "";
+  let isAiLoading = false;
+  let aiError = "";
 
   // Data from server
   export let data;
@@ -245,6 +252,96 @@
       delete main.dataset.originalClasses;
     }
   });
+
+  // AI Assistant functions
+  async function sendAIMessage(prompt) {
+    if (!prompt.trim()) return;
+
+    // Add user message
+    aiMessages = [...aiMessages, { role: 'user', content: prompt }];
+    isAiLoading = true;
+    aiError = "";
+
+    try {
+      const context = {
+        title: idea.title,
+        description: idea.description,
+        ageRange: idea.ageRange,
+        weather: idea.weather,
+        duration: idea.duration,
+        tools: idea.tools || [],
+        instructions: idea.instructions || []
+      };
+
+      const response = await callGemini(prompt, context);
+      
+      // Add AI response
+      aiMessages = [...aiMessages, { role: 'assistant', content: response }];
+    } catch (err) {
+      console.error("Error calling Gemini:", err);
+      aiError = err.message || "Failed to get AI response. Please try again.";
+      // Remove the user message if there was an error
+      aiMessages = aiMessages.slice(0, -1);
+    } finally {
+      isAiLoading = false;
+    }
+  }
+
+  function handleButtonClick(buttonText) {
+    sendAIMessage(buttonText);
+  }
+
+  async function handleCustomMessage() {
+    if (!aiInput.trim() || isAiLoading) return;
+    
+    const message = aiInput.trim();
+    aiInput = "";
+    await sendAIMessage(message);
+  }
+
+  function handleInputKeydown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleCustomMessage();
+    }
+  }
+
+  // Convert basic markdown to HTML for better formatting
+  function formatMessage(text) {
+    if (!text) return '';
+    
+    // Split into paragraphs first
+    const paragraphs = text.split(/\n\n+/);
+    
+    let html = paragraphs.map(para => {
+      // Check if paragraph is a list
+      const lines = para.split('\n');
+      const isList = lines.some(line => /^\s*[\*\-\+]\s+/.test(line));
+      
+      if (isList) {
+        // Process as list
+        const listItems = lines
+          .filter(line => /^\s*[\*\-\+]\s+/.test(line))
+          .map(line => {
+            let item = line.replace(/^\s*[\*\-\+]\s+/, '');
+            // Handle bold text in list items
+            item = item.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            return `<li class="mb-1">${item}</li>`;
+          });
+        return `<ul class="list-disc list-inside space-y-1 my-2 ml-2">${listItems.join('')}</ul>`;
+      } else {
+        // Process as regular paragraph
+        let formatted = para.trim();
+        // Handle bold text
+        formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        // Handle single line breaks within paragraph
+        formatted = formatted.replace(/\n/g, '<br>');
+        return formatted ? `<p class="mb-2">${formatted}</p>` : '';
+      }
+    }).join('');
+    
+    return html;
+  }
 
 </script>
 
@@ -526,33 +623,103 @@
       </div>
 
       <!-- Content -->
-      <div class="flex-1 overflow-y-auto p-6 space-y-4">
+      <div class="flex-1 overflow-y-auto p-6 space-y-4 flex flex-col">
+        <!-- Quick Action Buttons -->
         <div class="space-y-3">
-          <button class="w-full p-4 rounded-xl text-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-left hover:from-[var(--color-text-primary)] hover:to-[var(--color-primary)] transition-all duration-200 shadow-sm hover:shadow-md">
+          <button 
+            class="w-full p-4 rounded-xl text-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-left hover:from-[var(--color-text-primary)] hover:to-[var(--color-primary)] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            on:click={() => handleButtonClick("I don't have the right tool")}
+            disabled={isAiLoading}
+          >
             <span class="font-medium">I don't have the right tool</span>
           </button>
 
-          <button class="w-full p-4 rounded-xl text-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-left hover:from-[var(--color-text-primary)] hover:to-[var(--color-primary)] transition-all duration-200 shadow-sm hover:shadow-md">
+          <button 
+            class="w-full p-4 rounded-xl text-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-left hover:from-[var(--color-text-primary)] hover:to-[var(--color-primary)] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            on:click={() => handleButtonClick("The weather is different")}
+            disabled={isAiLoading}
+          >
             <span class="font-medium">The weather is different</span>
           </button>
 
-          <button class="w-full p-4 rounded-xl text-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-left hover:from-[var(--color-text-primary)] hover:to-[var(--color-primary)] transition-all duration-200 shadow-sm hover:shadow-md">
+          <button 
+            class="w-full p-4 rounded-xl text-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-left hover:from-[var(--color-text-primary)] hover:to-[var(--color-primary)] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            on:click={() => handleButtonClick("It's too time consuming")}
+            disabled={isAiLoading}
+          >
             <span class="font-medium">It's too time consuming</span>
           </button>
 
-          <button class="w-full p-4 rounded-xl text-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-left hover:from-[var(--color-text-primary)] hover:to-[var(--color-primary)] transition-all duration-200 shadow-sm hover:shadow-md">
+          <button 
+            class="w-full p-4 rounded-xl text-white bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-primary-light)] text-left hover:from-[var(--color-text-primary)] hover:to-[var(--color-primary)] transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            on:click={() => handleButtonClick("I'm working with a different age group")}
+            disabled={isAiLoading}
+          >
             <span class="font-medium">I'm working with a different age group</span>
           </button>
         </div>
 
-        <div class="pt-6 border-t border-[var(--color-border)] sticky top-[100vh]">
+        <!-- Messages Display -->
+        {#if aiMessages.length > 0}
+          <div class="pt-6 border-t border-[var(--color-border)] space-y-4">
+            {#each aiMessages as message}
+              <div class="space-y-2">
+                {#if message.role === 'user'}
+                  <div class="flex justify-end">
+                    <div class="max-w-[80%] bg-[var(--color-primary)] text-white rounded-lg p-3">
+                      <p class="text-sm">{message.content}</p>
+                    </div>
+                  </div>
+                {:else}
+                  <div class="flex justify-start">
+                    <div class="max-w-[80%] bg-gray-100 rounded-lg p-3">
+                      <div class="text-sm text-gray-800 prose prose-sm max-w-none">
+                        {@html formatMessage(message.content)}
+                      </div>
+                    </div>
+                  </div>
+                {/if}
+              </div>
+            {/each}
+            
+            {#if isAiLoading}
+              <div class="flex justify-start">
+                <div class="max-w-[80%] bg-gray-100 rounded-lg p-3">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                  </div>
+                </div>
+              </div>
+            {/if}
+          </div>
+        {/if}
+
+        {#if aiError}
+          <div class="pt-6 border-t border-[var(--color-border)]">
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
+              {aiError}
+            </div>
+          </div>
+        {/if}
+
+        <!-- Input Area - Sticky at bottom -->
+        <div class="pt-6 border-t border-[var(--color-border)] mt-auto">
           <div class="relative">
             <input 
+              bind:value={aiInput}
+              on:keydown={handleInputKeydown}
               placeholder="Ask anything..." 
-              class="w-full border border-[var(--color-border)] rounded-xl p-4 pl-12 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
+              class="w-full border border-[var(--color-border)] rounded-xl p-4 pl-12 pr-14 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent disabled:opacity-50"
+              disabled={isAiLoading}
             />
             <span class="absolute left-4 top-4 text-gray-400">💬</span>
-            <button class="absolute right-4 top-4 h-8 w-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center hover:bg-[var(--color-primary)] transition-colors">
+            <button 
+              class="absolute right-4 top-4 h-8 w-8 rounded-lg bg-[var(--color-primary)] flex items-center justify-center hover:bg-[var(--color-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              on:click={handleCustomMessage}
+              disabled={isAiLoading || !aiInput.trim()}
+            >
               <span class="text-white text-sm">→</span>
             </button>
           </div>
@@ -583,7 +750,4 @@
     z-index: 50;
   }
   
-  .z-40 {
-    z-index: 40;
-  }
 </style>
