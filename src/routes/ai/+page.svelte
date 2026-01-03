@@ -1,6 +1,7 @@
 <script>
   import Toast from "../lib/components/Toast.svelte";
   import { marked } from "marked";
+  import { apiFetch } from "$lib/api/client.js"
 
   let prompt = "";
   let messages = [];
@@ -183,7 +184,7 @@
     }
 
     //Saves the generated idea in the home page
-    function saveIdea(rawText) {
+    async function saveIdea(rawText) {
       const stored = JSON.parse(localStorage.getItem("ideas") || "[]");
 
       const cleanTitle = extractTitle(rawText);
@@ -216,7 +217,10 @@
         source: "ai"
       };
 
-  localStorage.setItem("ideas", JSON.stringify([idea, ...stored]));
+      await apiFetch("/ideas", {
+        method: "POST",
+        body: JSON.stringify(idea)
+      });
 
   toastMessage = "Idea saved successfully!";
   toastType = "success";
