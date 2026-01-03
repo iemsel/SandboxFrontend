@@ -62,9 +62,33 @@ export function removeFavorite(ideaId, token) {
   });
 }
 
-// get by id
-export async function getIdeaById(id) {
-  const ideas = await listIdeas();
+// GET /ideas/:id - get idea by id (includes comments)
+// token is optional - if provided, will include user reactions
+export async function getIdeaById(id, token) {
+  return apiFetch(`/ideas/${id}`, { token });
+}
 
-  return ideas.find((idea) => String(idea.id) === String(id));
+// POST /ideas/:id/comments - add a comment (protected)
+export function addComment(ideaId, { text, rating }, token) {
+  return apiFetch(`/ideas/${ideaId}/comments`, {
+    method: 'POST',
+    token,
+    body: { text, rating },
+  });
+}
+
+// POST /ideas/comments/:commentId/like - toggle like on a comment (protected)
+export function toggleCommentLike(commentId, token) {
+  return apiFetch(`/ideas/comments/${commentId}/like`, {
+    method: 'POST',
+    token,
+  });
+}
+
+// POST /ideas/comments/:commentId/dislike - toggle dislike on a comment (protected)
+export function toggleCommentDislike(commentId, token) {
+  return apiFetch(`/ideas/comments/${commentId}/dislike`, {
+    method: 'POST',
+    token,
+  });
 }
