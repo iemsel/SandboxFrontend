@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
-  import { listPlans } from "$lib/api/planner.js";
-  import { me } from "$lib/api/auth.js"; // use your auth.js for token/user
+  import { listPlans, createPlan, addPlanItem } from "$lib/api/planner.js";
+  import { me } from "$lib/api/auth.js"; 
 
   let selectedGroup = "";
   let inviteChecked = false;
@@ -118,6 +118,49 @@
       console.error("Error fetching plans:", err);
     }
   }
+
+  async function savePlan() {
+  try {
+    if (!selectedDateTime) {
+      alert('Please select a time slot');
+      return;
+    }
+
+    // Get user token if not already available
+    if (!token) {
+      const auth = await me(token);
+      user = auth.user;
+      token = auth.token;
+    }
+
+    // 1️⃣ Create a plan
+    const planData = {
+      title: idea.title,
+      date: selectedDateTime.toISOString().slice(0, 10),
+      class_name: 'Personal', // optional
+      notes: '',
+    };
+
+    const plan = await createPlan(planData, token);
+    console.log('Plan created:', plan);
+
+    // 2️⃣ Add the idea as a plan item
+    const itemData = {
+      idea_id: idea.id,
+      custom_title: idea.title,
+      custom_description: idea.description,
+      start_time: selectedDateTime.toISOString(),
+    };
+
+    const planItem = await addPlanItem(plan.id, itemData, token);
+    console.log('Plan item added:', planItem);
+
+    alert('Plan saved successfully!');
+  } catch (err) {
+    console.error(err);
+    alert('Failed to save plan: ' + err.message);
+  }
+}
 
   onMount(async () => {
     try {
@@ -398,6 +441,7 @@
         <button
           class="px-5 py-2 rounded"
           style="background-color: var(--color-primary-dark); color: var(--color-white);"
+          on:click={savePlan}
         >
           Save
         </button>
