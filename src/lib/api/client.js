@@ -21,12 +21,16 @@ export async function apiFetch(path, options = {}) {
   });
 
   if (!res.ok) {
+    const clone = res.clone();
+
     let errorBody;
     try {
       errorBody = await res.json();
     } catch {
-      errorBody = { error: await res.text() };
+      // safely read text from cloned response
+      errorBody = { error: await clone.text() };
     }
+
     console.error('API error', res.status, errorBody);
     throw new Error(errorBody.error || `Request failed with ${res.status}`);
   }
