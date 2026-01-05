@@ -77,3 +77,8 @@ export function removeFavorite(ideaId, token) {
     token,
   });
 }
+
+// GET /ideas/:id 
+export function getIdeaById(id, token) {
+  return apiFetch(`/ideas/${id}`, { token });
+}
