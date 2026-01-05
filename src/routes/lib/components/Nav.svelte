@@ -68,6 +68,14 @@
             <LayoutDashboard class="w-4 h-4" /> Dashboard
         </a>
 
+        <a
+            href="/profile"
+            on:click={() => (showDropdown = false)}
+            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 text-sm"
+            >
+            <User class="w-4 h-4" /> Profile
+        </a>
+
         <button
             on:click={handleLogout}
             class="w-full flex items-center gap-2 px-4 py-2 hover:bg-red-50 text-sm text-red-600 border-t mt-1"
