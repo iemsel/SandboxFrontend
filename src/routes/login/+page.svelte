@@ -111,6 +111,9 @@ try {
         Don't have an account? 
         <a href="/register" class="text-[var(--color-text-accent)] hover:text-[var(--color-primary-dark)] font-medium">Sign Up</a>
     </p>
+      <p class="mt-2 text-center text-xs text-[var(--color-text-secondary)] border-t border-gray-100 pt-4">
+        <a href="/reset-password" class="text-[var(--color-text-accent)] hover:text-[var(--color-primary-dark)] font-medium">Forgot your password?</a>
+      </p>
   </div>
 </section>
 

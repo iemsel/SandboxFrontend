@@ -51,32 +51,40 @@
                 </button>
 
                 {#if showDropdown}
-    <div
-        class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-[var(--color-border-light)] py-2 text-gray-800 z-[100]"
-    >
-        <div class="px-4 py-2 border-b border-gray-100 mb-1">
-            <p class="text-xs text-gray-500">Signed in as</p>
-            <p class="text-sm font-semibold truncate">
-                {$authStore.user?.name}
-            </p>
-        </div>
+                    <div
+                        class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-[var(--color-border-light)] py-2 text-gray-800 z-[100]"
+                    >
+                        <div class="px-4 py-2 border-b border-gray-100 mb-1">
+                            <p class="text-xs text-gray-500">Signed in as</p>
+                            <p class="text-sm font-semibold truncate">
+                                {$authStore.user?.name}
+                            </p>
+                        </div>
 
-        <a
-            href="/dashboard"
-            on:click={() => (showDropdown = false)}
-            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 text-sm"
-        >
-            <LayoutDashboard class="w-4 h-4" /> Dashboard
-        </a>
+                        <a
+                            href="/dashboard"
+                            on:click={() => (showDropdown = false)}
+                            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 text-sm"
+                        >
+                            <LayoutDashboard class="w-4 h-4" /> Dashboard
+                        </a>
 
-        <button
-            on:click={handleLogout}
-            class="w-full flex items-center gap-2 px-4 py-2 hover:bg-red-50 text-sm text-red-600 border-t mt-1"
-        >
-            <LogOut class="w-4 h-4" /> Log Out
-        </button>
-    </div>
-{/if}
+                        <a
+                            href="/profile"
+                            on:click={() => (showDropdown = false)}
+                            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 text-sm"
+                        >
+                            <User class="w-4 h-4" /> Profile
+                        </a>
+
+                        <button
+                            on:click={handleLogout}
+                            class="w-full flex items-center gap-2 px-4 py-2 hover:bg-red-50 text-sm text-red-600 border-t mt-1"
+                        >
+                            <LogOut class="w-4 h-4" /> Log Out
+                        </button>
+                    </div>
+                {/if}
             </li>
         {:else}
             <li><a href="/login" class="hover:underline">Log In</a></li>
