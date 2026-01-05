@@ -3,67 +3,22 @@
   import { listPlans, createPlan, addPlanItem } from "$lib/api/planner.js";
   import { me } from "$lib/api/auth.js"; 
 
+  // ----- State -----
+  export let data; // passed from parent
+  const { idea } = data;
+
+  let token = null;
+  let user = null;
+  let plans = [];
+  let selectedSlot = null; // set by your time grid
   let selectedGroup = "";
   let inviteChecked = false;
   $: if (!inviteChecked) selectedGroup = "";
 
-  // Days of the week
-  let days = [
-    { label: "MON" },
-    { label: "TUE" },
-    { label: "WED" },
-    { label: "THU" },
-    { label: "FRI" },
-    { label: "SAT" },
-    { label: "SUN" },
-  ];
-
-  // Hours for time grid
-  const hours = Array.from(
-    { length: 24 },
-    (_, i) => `${String(i).padStart(2, "0")}:00`,
-  );
-
+  // ----- Time & week helpers -----
   let currentDate = new Date();
-  let plans = [];
-  let token = null;
-  let user = null;
+  const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2,"0")}:00`);
 
-  // selected time slot
-  let selectedSlot = null;
-
-  // calculate real date+time from selected slot
-  $: selectedDateTime = selectedSlot
-    ? new Date(
-        dayDates[selectedSlot.dayIndex].getFullYear(),
-        dayDates[selectedSlot.dayIndex].getMonth(),
-        dayDates[selectedSlot.dayIndex].getDate(),
-        selectedSlot.hourIndex,
-        selectedSlot.minute || 0,
-        0,
-      )
-    : null;
-
-  // Get ISO week number
-  function getISOWeek(date) {
-    const tmp = new Date(
-      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
-    );
-    const dayNum = tmp.getUTCDay() || 7;
-    tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
-    return Math.ceil(((tmp - yearStart) / 86400000 + 1) / 7);
-  }
-
-  // Get Monday of the current week
-  function getMonday(d) {
-    const date = new Date(d);
-    const day = (date.getDay() + 6) % 7;
-    date.setDate(date.getDate() - day);
-    return date;
-  }
-
-  // Reactive week data
   $: monday = getMonday(currentDate);
   $: weekNumber = getISOWeek(currentDate);
   $: year = monday.getFullYear();
@@ -74,24 +29,39 @@
     return d;
   });
 
-  // Update days array with dynamic day numbers and highlight current day
+  // ----- Selected date + time -----
+  $: selectedDateTime = selectedSlot
+    ? new Date(
+        dayDates[selectedSlot.dayIndex].getFullYear(),
+        dayDates[selectedSlot.dayIndex].getMonth(),
+        dayDates[selectedSlot.dayIndex].getDate(),
+        selectedSlot.hourIndex,
+        selectedSlot.minute || 0,
+        0
+      )
+    : null;
+
+  // ----- Day array update -----
+  let days = [
+    { label: "MON" }, { label: "TUE" }, { label: "WED" },
+    { label: "THU" }, { label: "FRI" }, { label: "SAT" }, { label: "SUN" }
+  ];
+
   $: {
     const today = new Date();
-
     days = days.map((d, i) => {
       const date = dayDates[i];
       return {
         ...d,
         num: date.getDate(),
-        selected:
-          date.getFullYear() === today.getFullYear() &&
-          date.getMonth() === today.getMonth() &&
-          date.getDate() === today.getDate(),
+        selected: date.getFullYear() === today.getFullYear() &&
+                  date.getMonth() === today.getMonth() &&
+                  date.getDate() === today.getDate(),
       };
     });
   }
 
-  // Navigate weeks
+  // ----- Week navigation -----
   function nextWeek() {
     currentDate = new Date(currentDate);
     currentDate.setDate(currentDate.getDate() + 7);
@@ -102,74 +72,86 @@
     currentDate.setDate(currentDate.getDate() - 7);
   }
 
-  // dummy idea data
-  export let data;
-  const { idea } = data;
+  // ----- Helper functions -----
+  function getISOWeek(date) {
+    const tmp = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = tmp.getUTCDay() || 7;
+    tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(tmp.getUTCFullYear(), 0, 1));
+    return Math.ceil(((tmp - yearStart) / 86400000 + 1) / 7);
+  }
 
-  // Fetch plans from backend
+  function getMonday(d) {
+    const date = new Date(d);
+    const day = (date.getDay() + 6) % 7;
+    date.setDate(date.getDate() - day);
+    return date;
+  }
+
+  // ----- Load plans -----
   async function loadPlans() {
     if (!token) return;
-
     try {
-      const date = new Date().toISOString().slice(0, 10); // fetch today's plans
-      plans = await listPlans({ date }, token);
-      console.log("Fetched plans:", plans);
+      plans = await listPlans({}, token);
+      console.log('Loaded plans:', plans);
     } catch (err) {
-      console.error("Error fetching plans:", err);
+      console.error('Failed to load plans:', err);
     }
   }
 
+  // ----- Save plan (create plan + add idea item) -----
   async function savePlan() {
-  try {
-    if (!selectedDateTime) {
-      alert('Please select a time slot');
-      return;
+    try {
+      if (!token) {
+        alert('You must be logged in to save a plan');
+        return;
+      }
+      if (!selectedDateTime) {
+        alert('Please select a time slot');
+        return;
+      }
+
+      // 1️⃣ Create plan
+      const planData = {
+        title: idea.title,
+        date: selectedDateTime.toISOString().slice(0, 10),
+        class_name: 'Personal',
+        notes: '',
+      };
+      const plan = await createPlan(planData, token);
+      console.log('Plan created:', plan);
+
+      // 2️⃣ Add idea as plan item
+      const itemData = {
+        idea_id: idea.id,
+        custom_title: idea.title,
+        custom_description: idea.description,
+        start_time: selectedDateTime.toISOString(),
+      };
+      const planItem = await addPlanItem(plan.id, itemData, token);
+      console.log('Plan item added:', planItem);
+
+      // Refresh plans
+      await loadPlans();
+      alert('Plan saved successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save plan: ' + (err.message || err));
     }
-
-    // Get user token if not already available
-    if (!token) {
-      const auth = await me(token);
-      user = auth.user;
-      token = auth.token;
-    }
-
-    // 1️⃣ Create a plan
-    const planData = {
-      title: idea.title,
-      date: selectedDateTime.toISOString().slice(0, 10),
-      class_name: 'Personal', // optional
-      notes: '',
-    };
-
-    const plan = await createPlan(planData, token);
-    console.log('Plan created:', plan);
-
-    // 2️⃣ Add the idea as a plan item
-    const itemData = {
-      idea_id: idea.id,
-      custom_title: idea.title,
-      custom_description: idea.description,
-      start_time: selectedDateTime.toISOString(),
-    };
-
-    const planItem = await addPlanItem(plan.id, itemData, token);
-    console.log('Plan item added:', planItem);
-
-    alert('Plan saved successfully!');
-  } catch (err) {
-    console.error(err);
-    alert('Failed to save plan: ' + err.message);
   }
-}
 
+  // ----- On mount: get token, user, load plans -----
   onMount(async () => {
     try {
-      // Get current user and token from auth.js
-      const response = await me(token);
-      user = response.user;
-      token = response.token || null;
+      token = localStorage.getItem('token'); // match your auth
+      if (!token) {
+        console.warn('No token found. User is not logged in.');
+        return;
+      }
 
-      // Fetch backend plans
+      const auth = await me(token);
+      user = auth.user;
+
       await loadPlans();
     } catch (err) {
       console.error("Failed to get user info or plans:", err);

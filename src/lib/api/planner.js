@@ -1,7 +1,6 @@
-/* eslint-disable prettier/prettier */
-import { apiFetch } from '$lib/api/client.js'; // make sure path matches your project structure
+import { apiFetch } from './client.js'; // same folder as client.js
 
-const API_PREFIX = '/planner'; // matches your vite proxy
+const API_PREFIX = '/api/planner'; // must match the Vite proxy
 
 // GET /planner/plans?date=YYYY-MM-DD
 export function listPlans({ date } = {}, token) {
@@ -26,14 +25,10 @@ export function getPlan(id, token) {
 }
 
 // POST /planner/plans/:id/items
-export function addPlanItem(
-  planId,
-  { idea_id, custom_title, custom_description, start_time, end_time, location },
-  token
-) {
+export function addPlanItem(planId, item, token) {
   return apiFetch(`${API_PREFIX}/plans/${planId}/items`, {
     method: 'POST',
     token,
-    body: { idea_id, custom_title, custom_description, start_time, end_time, location },
+    body: item,
   });
 }
