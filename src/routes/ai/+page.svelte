@@ -1,7 +1,8 @@
 <script>
   import Toast from "../lib/components/Toast.svelte";
   import { marked } from "marked";
-  import { apiFetch } from "$lib/api/client.js"
+  import { createIdea } from "$lib/api/idea";
+  import { goto } from "$app/navigation";
 
   let prompt = "";
   let messages = [];
@@ -185,47 +186,56 @@
 
     //Saves the generated idea in the home page
     async function saveIdea(rawText) {
-      const stored = JSON.parse(localStorage.getItem("ideas") || "[]");
+      try {
+        const cleanTitle = extractTitle(rawText);
+        const cleanDescription = stripMarkdown(rawText);
+        const meta = parseIdeaMetadata(rawText);
+        const timeMinutes = extractTime(rawText);
 
-      const cleanTitle = extractTitle(rawText);
-      const cleanDescription = stripMarkdown(rawText);
+        const token = localStorage.getItem("greenclues_token");
+        if (!token) {
+          throw new Error("You must be logged in to save ideas.");
+        }
 
-      const meta = parseIdeaMetadata(rawText);
-      const timeMinutes = extractTime(rawText);
+        const payload = {
+          title: cleanTitle,
+          description: cleanDescription,
 
-      const idea = {
-        id: crypto.randomUUID(),
-        title: cleanTitle,
-        description: cleanDescription,
+          time_minutes: timeMinutes,
+          time_label: `${timeMinutes} min`,
 
-        difficulty: meta.difficulty,
-        season: meta.season ?? "any",
-        subject: meta.subject ?? "general",
-        weather: meta.weather ?? "any",
-        yard_context: meta.yard ?? "any",
+          difficulty: meta.difficulty?.toLowerCase() ?? "easy",
+          season: meta.season?.toLowerCase() ?? "any",
+          subject: meta.subject?.toLowerCase() ?? "general",
+          weather: meta.weather?.toLowerCase() ?? "any",
+          yard_context: meta.yard ?? "no_green",
 
-        min_age: meta.min_age,
-        max_age: meta.max_age,
+          min_age: meta.min_age,
+          max_age: meta.max_age,
 
-        time_minutes: timeMinutes,
-        time_label: `${timeMinutes} min`,
+          tags: [],
+          categories: [],
+        };
 
-        tags: [],
-        categories: [],
-        created_at: new Date().toISOString(),
-        rating: null,
-        source: "ai"
-      };
+        await createIdea(payload, token);
 
-      await apiFetch("/ideas", {
-        method: "POST",
-        body: JSON.stringify(idea)
-      });
+        toastMessage = "Idea saved successfully!";
+        toastType = "success";
+        showToast = true;
 
-  toastMessage = "Idea saved successfully!";
-  toastType = "success";
-  showToast = true;
-}
+        // 🔑 IMPORTANT: refresh ideas page
+        setTimeout(() => {
+          goto("/");
+        }, 800);
+
+      } catch (err) {
+        console.error(err);
+        toastMessage = err.message || "Failed to save idea";
+        toastType = "error";
+        showToast = true;
+      }
+    }
+
 
 </script>
 
