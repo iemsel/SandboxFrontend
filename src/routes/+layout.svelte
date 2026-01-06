@@ -1,5 +1,9 @@
 <script>
-  import '../app.css';
+  import "../app.css";
+  import Nav from "./lib/components/Nav.svelte";
+  import { authStore } from "$lib/api/authStore.js";
+  import { getStoredUser } from "$lib/api/auth.js";
+  
   let { children } = $props();
 
   // Initialize the store from local storage on application load

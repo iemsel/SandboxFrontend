@@ -290,21 +290,25 @@
 
     <!-- Input -->
     <div class="sticky bottom-0 bg-white pt-4">
-      <div class="flex items-center gap-3 border rounded-xl px-4 py-3 shadow-sm">
-        <input
-          bind:value={prompt}
-          placeholder="Describe the activity you're looking for..."
-          class="flex-1 focus:outline-none"
-          on:keydown={(e) => e.key === "Enter" && handleSend()}
-        />
-        <button
-          on:click={handleSend}
-          class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg disabled:opacity-50"
-          disabled={loading}
-        >
-          ➤
-        </button>
-      </div>
+    <form
+      class="flex items-center gap-3 border rounded-xl px-4 py-3 shadow-sm"
+      on:submit|preventDefault={handleSend}
+    >
+      <input
+        bind:value={prompt}
+        placeholder="Describe the activity you're looking for..."
+        class="flex-1 focus:outline-none"
+      />
+
+      <button
+        type="submit"
+        class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg disabled:opacity-50"
+        disabled={loading}
+      >
+        ➤
+      </button>
+    </form>
+
 
       <p class="text-xs text-gray-400 text-center mt-3">
         AI can make mistakes. Please review ideas before saving.
