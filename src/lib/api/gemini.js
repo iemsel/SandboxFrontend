@@ -3,7 +3,13 @@
  * Uses the free Gemini API to generate responses
  */
 
-const GEMINI_API_KEY = 'AIzaSyC1Qip5y52JvHB7byH44MDKrmrdGioTtWE';
+// Get API key from environment variable
+const GEMINI_API_KEY = import.meta.env.VITE_PUBLIC_GEMINI_API_KEY;
+
+if (!GEMINI_API_KEY) {
+  console.error('GEMINI_API_KEY is not set. Please add VITE_PUBLIC_GEMINI_API_KEY to your .env file');
+}
+
 // Use gemini-2.5-flash-lite (cost-efficient model for free tier)
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -14,6 +20,10 @@ const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/
  * @returns {Promise<string>} - The AI's response
  */
 export async function callGemini(prompt, context = {}) {
+  if (!GEMINI_API_KEY) {
+    throw new Error('Gemini API key is not configured. Please set VITE_PUBLIC_GEMINI_API_KEY in your .env file.');
+  }
+  
   try {
     // Build a context-aware prompt
     let fullPrompt = prompt;
