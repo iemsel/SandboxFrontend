@@ -16,10 +16,9 @@ export default defineConfig({
 				target: API_GATEAWAY_URL,
 				changeOrigin: true,
 			},
-			'/api/planner': {
+			'/planner': {
 				target: API_GATEAWAY_URL,
 				changeOrigin: true,
-				rewrite: (path) => path.replace(/^\/api\/planner/, '/planner')
 			}
 		}
 	}
