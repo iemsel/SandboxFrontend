@@ -4,7 +4,7 @@
   import { authStore } from "$lib/api/authStore.js";
   import { goto } from "$app/navigation";
   import { page } from "$app/stores";
-  import { addComment, toggleCommentLike, toggleCommentDislike, getIdeaById, addFavorite, removeFavorite } from "$lib/api/idea.js";
+  import { addComment, toggleCommentLike, toggleCommentDislike, getIdeaById, addFavorite, removeFavorite, createIdea } from "$lib/api/idea.js";
   import { Heart } from "@lucide/svelte";
   import { browser } from '$app/environment';
   import { onMount, onDestroy } from 'svelte';
@@ -17,6 +17,14 @@
   let aiInput = "";
   let isAiLoading = false;
   let aiError = "";
+  
+  // Draft state for personalized content
+  let draftChanges = null; // { tools, instructions, description, title }
+  let hasDraftChanges = false;
+  
+  // Track if we're in questioning phase (need more info before personalizing)
+  let isQuestioningPhase = false;
+  let conversationHistory = []; // Track full conversation for context
 
   // Data from server
   export let data;
@@ -254,11 +262,12 @@
   });
 
   // AI Assistant functions
-  async function sendAIMessage(prompt) {
+  async function sendAIMessage(prompt, isPresetButton = false) {
     if (!prompt.trim()) return;
 
     // Add user message
     aiMessages = [...aiMessages, { role: 'user', content: prompt }];
+    conversationHistory.push({ role: 'user', content: prompt });
     isAiLoading = true;
     aiError = "";
 
@@ -270,25 +279,153 @@
         weather: idea.weather,
         duration: idea.duration,
         tools: idea.tools || [],
-        instructions: idea.instructions || []
+        instructions: idea.instructions || [],
+        currentDraft: draftChanges, // Pass current draft for incremental updates
+        conversationHistory: conversationHistory.slice(-6), // Last 6 messages for context
+        isQuestioningPhase: isQuestioningPhase,
+        isPresetButton: isPresetButton
       };
 
       const response = await callGemini(prompt, context);
       
-      // Add AI response
-      aiMessages = [...aiMessages, { role: 'assistant', content: response }];
+      // Check if response is a question (text) or personalization (JSON)
+      try {
+        // Try to extract JSON
+        const jsonMatch = response.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          
+          // Check if it's actually a personalization JSON or just text that looks like JSON
+          if (parsed.tools || parsed.instructions || parsed.description || parsed.title) {
+            // It's a personalization - apply/update draft changes
+            draftChanges = {
+              tools: parsed.tools !== undefined ? parsed.tools : (draftChanges?.tools || idea.tools),
+              instructions: parsed.instructions !== undefined ? parsed.instructions : (draftChanges?.instructions || idea.instructions),
+              description: parsed.description !== undefined ? parsed.description : (draftChanges?.description || idea.description),
+              title: parsed.title !== undefined ? parsed.title : (draftChanges?.title || idea.title)
+            };
+            hasDraftChanges = true;
+            isQuestioningPhase = false; // We have enough info now
+            
+            // Add confirmation message
+            aiMessages = [...aiMessages, { 
+              role: 'assistant', 
+              content: 'I\'ve updated the personalization! Review the changes below. You can continue editing or click "Apply Changes" to save.' 
+            }];
+            conversationHistory.push({ role: 'assistant', content: 'Personalization updated' });
+          } else {
+            // Not a valid personalization JSON, treat as text
+            aiMessages = [...aiMessages, { role: 'assistant', content: response }];
+            conversationHistory.push({ role: 'assistant', content: response });
+            isQuestioningPhase = true; // Still need more info
+          }
+        } else {
+          // No JSON found - it's a question or text response
+          aiMessages = [...aiMessages, { role: 'assistant', content: response }];
+          conversationHistory.push({ role: 'assistant', content: response });
+          isQuestioningPhase = true; // Still in questioning phase
+        }
+      } catch (parseError) {
+        console.error("Error parsing AI response:", parseError);
+        // If parsing fails, show the response as a message (likely a question)
+        aiMessages = [...aiMessages, { role: 'assistant', content: response }];
+        conversationHistory.push({ role: 'assistant', content: response });
+        isQuestioningPhase = true;
+      }
     } catch (err) {
       console.error("Error calling Gemini:", err);
       aiError = err.message || "Failed to get AI response. Please try again.";
       // Remove the user message if there was an error
       aiMessages = aiMessages.slice(0, -1);
+      conversationHistory.pop();
     } finally {
       isAiLoading = false;
     }
   }
+  
+  // Apply draft changes - save as new idea
+  async function applyDraftChanges() {
+    if (!hasDraftChanges || !draftChanges) return;
+    if (!$authStore.isLoggedIn) {
+      aiError = "Please log in to save personalized ideas";
+      return;
+    }
+    
+    const token = getToken();
+    if (!token) {
+      aiError = "Authentication token not found. Please log in again.";
+      return;
+    }
+    
+    isAiLoading = true;
+    aiError = "";
+    
+    try {
+      // Calculate time_minutes from duration if needed
+      const timeMinutes = idea.time_minutes || null;
+      const timeLabel = idea.time_label || idea.duration || null;
+      
+      // Prepare materials (tools) as comma-separated string
+      const materials = Array.isArray(draftChanges.tools) 
+        ? draftChanges.tools.join(', ') 
+        : (typeof draftChanges.tools === 'string' ? draftChanges.tools : (idea.tools || []).join(', '));
+      
+      // Ensure instructions is an array
+      const instructions = Array.isArray(draftChanges.instructions) 
+        ? draftChanges.instructions 
+        : (idea.instructions || []);
+      
+      // Create new idea with personalized content
+      const newIdea = await createIdea({
+        title: draftChanges.title || `${idea.title} (Personalized)`,
+        description: draftChanges.description || idea.description,
+        time_minutes: timeMinutes,
+        time_label: timeLabel,
+        difficulty: idea.difficulty || 'easy',
+        materials: materials,
+        subject: idea.subject || null,
+        season: idea.season || 'any',
+        yard_context: idea.yard_context || 'no_green',
+        instructions: instructions,
+        weather: idea.weather || 'any',
+        min_age: idea.min_age || null,
+        max_age: idea.max_age || null,
+        image_url: idea.imageUrl || idea.image_url || null
+      }, token);
+      
+      // Redirect to the new idea page
+      if (newIdea && newIdea.id) {
+        goto(`/idea/${newIdea.id}`);
+      } else {
+        aiError = "Failed to create personalized idea. Please try again.";
+      }
+    } catch (err) {
+      console.error("Error applying changes:", err);
+      aiError = err.message || "Failed to save personalized idea. Please try again.";
+    } finally {
+      isAiLoading = false;
+    }
+  }
+  
+  // Discard draft changes
+  function discardDraftChanges() {
+    draftChanges = null;
+    hasDraftChanges = false;
+    aiMessages = [];
+    conversationHistory = [];
+    isQuestioningPhase = false;
+  }
 
   function handleButtonClick(buttonText) {
-    sendAIMessage(buttonText);
+    // Reset conversation when starting with preset button
+    if (aiMessages.length === 0) {
+      conversationHistory = [];
+      draftChanges = null;
+      hasDraftChanges = false;
+    }
+    // Always start in questioning phase for preset buttons
+    isQuestioningPhase = true;
+    sendAIMessage(buttonText, true);
   }
 
   async function handleCustomMessage() {
@@ -296,7 +433,7 @@
     
     const message = aiInput.trim();
     aiInput = "";
-    await sendAIMessage(message);
+    await sendAIMessage(message, false);
   }
 
   function handleInputKeydown(event) {
@@ -364,8 +501,12 @@
 
           <!-- Title & Meta -->
           <div>
-            <h1 class="mb-2 text-4xl font-bold text-[var(--color-text-primary)]">{idea.title}</h1>
-            <p class="mb-4 text-lg text-gray-600">{idea.description}</p>
+            <h1 class="mb-2 text-4xl font-bold text-[var(--color-text-primary)] {hasDraftChanges && draftChanges?.title ? 'text-[var(--color-primary)]' : ''}">
+              {hasDraftChanges && draftChanges?.title ? draftChanges.title : idea.title}
+            </h1>
+            <p class="mb-4 text-lg text-gray-600 {hasDraftChanges && draftChanges?.description ? 'text-[var(--color-primary)]' : ''}">
+              {hasDraftChanges && draftChanges?.description ? draftChanges.description : idea.description}
+            </p>
 
             <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
               <span>Age {idea.ageRange}</span>
@@ -400,12 +541,12 @@
           <!-- Tools -->
           <div class="space-y-4">
             <h2 class="text-2xl font-bold text-[var(--color-text-primary)]">Tools & Materials</h2>
-            <div class="border border-[var(--color-border)] rounded-lg p-6 bg-white">
+            <div class="border border-[var(--color-border)] rounded-lg p-6 bg-white {hasDraftChanges && draftChanges?.tools ? 'border-[var(--color-primary)] border-2 bg-blue-50' : ''}">
               <ul class="space-y-3">
-                {#each idea.tools as tool}
+                {#each (hasDraftChanges && draftChanges?.tools ? draftChanges.tools : idea.tools) as tool}
                   <li class="flex items-start gap-3">
                     <span class="mt-1 h-5 w-5 rounded-full border-2 border-[var(--color-primary)] bg-white"></span>
-                    <span class="text-gray-700">{tool}</span>
+                    <span class="text-gray-700 {hasDraftChanges && draftChanges?.tools ? 'font-medium' : ''}">{tool}</span>
                   </li>
                 {/each}
               </ul>
@@ -415,14 +556,14 @@
           <!-- Instructions -->
           <div class="space-y-4">
             <h2 class="text-2xl font-bold text-[var(--color-text-primary)]">Instructions</h2>
-            <div class="border border-[var(--color-border)] rounded-lg p-6 bg-white">
+            <div class="border border-[var(--color-border)] rounded-lg p-6 bg-white {hasDraftChanges && draftChanges?.instructions ? 'border-[var(--color-primary)] border-2 bg-blue-50' : ''}">
               <ol class="space-y-6">
-                {#each idea.instructions as step, i}
+                {#each (hasDraftChanges && draftChanges?.instructions ? draftChanges.instructions : idea.instructions) as step, i}
                   <li class="flex gap-4">
                     <span class="h-8 w-8 flex items-center justify-center rounded-full bg-[var(--color-primary)] text-white font-bold flex-shrink-0">
                       {i + 1}
                     </span>
-                    <span class="pt-1 text-gray-700">{step}</span>
+                    <span class="pt-1 text-gray-700 {hasDraftChanges && draftChanges?.instructions ? 'font-medium' : ''}">{step}</span>
                   </li>
                 {/each}
               </ol>
@@ -616,7 +757,10 @@
         </div>
         <button 
           class="h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors"
-          on:click={() => showAI = false}
+          on:click={() => {
+            showAI = false;
+            // Don't reset conversation - allow user to continue when reopening
+          }}
         >
           <span class="text-white text-lg">×</span>
         </button>
@@ -700,6 +844,31 @@
           <div class="pt-6 border-t border-[var(--color-border)]">
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
               {aiError}
+            </div>
+          </div>
+        {/if}
+
+        <!-- Apply Changes Button -->
+        {#if hasDraftChanges}
+          <div class="pt-6 border-t border-[var(--color-border)]">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+              <p class="text-sm text-blue-800 font-medium">Personalized changes are ready!</p>
+              <div class="flex gap-2">
+                <button
+                  class="flex-1 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  on:click={applyDraftChanges}
+                  disabled={isAiLoading}
+                >
+                  {isAiLoading ? "Saving..." : "Apply Changes"}
+                </button>
+                <button
+                  class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  on:click={discardDraftChanges}
+                  disabled={isAiLoading}
+                >
+                  Discard
+                </button>
+              </div>
             </div>
           </div>
         {/if}
