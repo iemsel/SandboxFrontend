@@ -12,7 +12,6 @@ services:
       - NODE_ENV=development
       - VITE_PUBLIC_API_URL=http://host.docker.internal:3010
       - PUBLIC_API_URL=http://host.docker.internal:3010  # Special DNS for host machine
-      - VITE_GEMINI_API_KEY=${VITE_GEMINI_API_KEY}
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"

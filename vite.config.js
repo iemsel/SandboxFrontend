@@ -5,21 +5,21 @@ import { defineConfig } from 'vite';
 const API_GATEAWAY_URL = process.env.VITE_PUBLIC_API_URL || 'http://localhost:3010';
 
 export default defineConfig({
-    plugins: [tailwindcss(), sveltekit()],
-    server: {
-        proxy: {
-            '/auth': {
-                target: API_GATEAWAY_URL,
-                changeOrigin: true,
-            },
-            '/ideas': {
-                target: API_GATEAWAY_URL,
-                changeOrigin: true,
-            },
-            '/planner': {
-                target: API_GATEAWAY_URL,
-                changeOrigin: true,
-            }
-        }
-    }
-}); 
+	plugins: [tailwindcss(), sveltekit()],
+	server: {
+		proxy: {
+			'/auth': {
+				target: API_GATEAWAY_URL,
+				changeOrigin: true,
+			},
+			'/ideas': {
+				target: API_GATEAWAY_URL,
+				changeOrigin: true,
+			},
+			'/planner': {
+				target: API_GATEAWAY_URL,
+				changeOrigin: true,
+			}
+		}
+	}
+});
