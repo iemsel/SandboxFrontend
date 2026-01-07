@@ -152,6 +152,8 @@
       (idea.weather &&
         idea.weather.toLowerCase() === filters.weather.toLowerCase());
 
+    const matchesFavorites = !filters.favoritesOnly || idea.isFavorited;
+
     return (
       matchesSearch &&
       matchesDifficulty &&
@@ -159,7 +161,8 @@
       matchesAge &&
       matchesSubject &&
       matchesWeather &&
-      matchesDuration
+      matchesDuration &&
+      matchesFavorites
     );
   });
 

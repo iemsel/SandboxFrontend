@@ -1,6 +1,6 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-  import { tick } from "svelte";
+  import { createEventDispatcher } from 'svelte';
+  import { tick } from 'svelte';
 
   const dispatch = createEventDispatcher();
 
@@ -21,20 +21,21 @@
   let maxAge = AGE_MAX;
   let minDuration = DURATION_MIN;
   let maxDuration = DURATION_MAX;
+  let favoritesOnly = false;
 
   $: if (minAge > maxAge) minAge = maxAge;
   $: if (minDuration > maxDuration) minDuration = maxDuration;
 
   // Example options
-  const difficulties = ["Easy", "Medium", "Hard"];
-  const seasons = ["Spring", "Summer", "Fall", "Winter"];
-  const yards = ["Indoor", "Outdoor", "Both"];
-  const subjects = ["Language", "Math", "Science", "Arts"];
-  const weathers = ["Sunny", "Rainy", "Snowy", "Cloudy"];
-  const tags = ["Listening", "Creativity", "Teamwork", "Problem Solving"];
+  const difficulties = ['Easy', 'Medium', 'Hard'];
+  const seasons = ['Spring', 'Summer', 'Fall', 'Winter'];
+  const yards = ['Indoor', 'Outdoor', 'Both'];
+  const subjects = ['Language', 'Math', 'Science', 'Arts'];
+  const weathers = ['Sunny', 'Rainy', 'Snowy', 'Cloudy'];
+  const tags = ['Listening', 'Creativity', 'Teamwork', 'Problem Solving'];
 
   function applyFilters() {
-    dispatch("apply", {
+    dispatch('apply', {
       difficulty: selectedDifficulty,
       season: selectedSeason,
       subject: selectedSubject,
@@ -43,6 +44,7 @@
       maxAge,
       minDuration,
       maxDuration,
+      favoritesOnly,
     });
   }
 
@@ -55,6 +57,7 @@
     maxAge = AGE_MAX;
     minDuration = DURATION_MIN;
     maxDuration = DURATION_MAX;
+    favoritesOnly = false;
     applyFilters();
   }
 
@@ -65,14 +68,20 @@
 </script>
 
 <div class="p-6 flex flex-col gap-4">
+  <!-- Favourite Toggle-->
+  <h3 class="font-semibold mt-4 mb-2">Favorites</h3>
+  <div class="flex items-center gap-2 mb-4">
+    <input type="checkbox" bind:checked={favoritesOnly} id="favoritesOnly" />
+    <label for="favoritesOnly" class="text-sm">Show only favorited ideas</label>
+  </div>
+
   <!-- Difficulty -->
   <h3 class="font-semibold mb-2">Difficulty</h3>
   <div class="flex flex-wrap gap-2 mb-4">
     {#each difficulties as diff}
       <button
-        class={`px-3 py-1 rounded border ${selectedDifficulty === diff ? "bg-[var(--color-primary)] text-white" : "bg-white"}`}
-        on:click={() =>
-          (selectedDifficulty = selectedDifficulty === diff ? null : diff)}
+        class={`px-3 py-1 rounded border ${selectedDifficulty === diff ? 'bg-[var(--color-primary)] text-white' : 'bg-white'}`}
+        on:click={() => (selectedDifficulty = selectedDifficulty === diff ? null : diff)}
         >{diff}</button
       >
     {/each}
@@ -83,9 +92,8 @@
   <div class="flex flex-wrap gap-2 mb-4">
     {#each seasons as season}
       <button
-        class={`px-3 py-1 rounded border ${selectedSeason === season ? "bg-[var(--color-primary)] text-white" : "bg-white"}`}
-        on:click={() =>
-          (selectedSeason = selectedSeason === season ? null : season)}
+        class={`px-3 py-1 rounded border ${selectedSeason === season ? 'bg-[var(--color-primary)] text-white' : 'bg-white'}`}
+        on:click={() => (selectedSeason = selectedSeason === season ? null : season)}
         >{season}</button
       >
     {/each}
@@ -96,10 +104,8 @@
   <div class="flex flex-wrap gap-2 mb-4">
     {#each subjects as sub}
       <button
-        class={`px-3 py-1 rounded border ${selectedSubject === sub ? "bg-[var(--color-primary)] text-white" : "bg-white"}`}
-        on:click={() =>
-          (selectedSubject = selectedSubject === sub ? null : sub)}
-        >{sub}</button
+        class={`px-3 py-1 rounded border ${selectedSubject === sub ? 'bg-[var(--color-primary)] text-white' : 'bg-white'}`}
+        on:click={() => (selectedSubject = selectedSubject === sub ? null : sub)}>{sub}</button
       >
     {/each}
   </div>
@@ -109,9 +115,8 @@
   <div class="flex flex-wrap gap-2 mb-4">
     {#each weathers as weather}
       <button
-        class={`px-3 py-1 rounded border ${selectedWeather === weather ? "bg-[var(--color-primary)] text-white" : "bg-white"}`}
-        on:click={() =>
-          (selectedWeather = selectedWeather === weather ? null : weather)}
+        class={`px-3 py-1 rounded border ${selectedWeather === weather ? 'bg-[var(--color-primary)] text-white' : 'bg-white'}`}
+        on:click={() => (selectedWeather = selectedWeather === weather ? null : weather)}
         >{weather}</button
       >
     {/each}
@@ -120,38 +125,16 @@
   <!-- Age Range -->
   <h3 class="font-semibold mt-4 mb-2">Age Range</h3>
   <div class="flex items-center gap-3">
-    <input
-      type="range"
-      min={AGE_MIN}
-      max={AGE_MAX}
-      bind:value={minAge}
-      class="w-full"
-    />
-    <input
-      type="range"
-      min={AGE_MIN}
-      max={AGE_MAX}
-      bind:value={maxAge}
-      class="w-full"
-    />
+    <input type="range" min={AGE_MIN} max={AGE_MAX} bind:value={minAge} class="w-full" />
+    <input type="range" min={AGE_MIN} max={AGE_MAX} bind:value={maxAge} class="w-full" />
   </div>
   <p class="text-sm text-gray-500">{minAge} – {maxAge} years</p>
 
   <!-- Duration -->
   <h3 class="font-semibold mt-4 mb-2">Duration (minutes)</h3>
   <div class="flex items-center gap-3">
-    <input
-      type="range"
-      min={DURATION_MIN}
-      max={DURATION_MAX}
-      bind:value={minDuration}
-    />
-    <input
-      type="range"
-      min={DURATION_MIN}
-      max={DURATION_MAX}
-      bind:value={maxDuration}
-    />
+    <input type="range" min={DURATION_MIN} max={DURATION_MAX} bind:value={minDuration} />
+    <input type="range" min={DURATION_MIN} max={DURATION_MAX} bind:value={maxDuration} />
   </div>
   <p class="text-sm text-gray-500">
     {minDuration} – {maxDuration} min
@@ -159,13 +142,11 @@
 
   <!-- Buttons -->
   <div class="flex gap-2 mt-4">
-    <button
-      class="px-4 py-2 bg-gray-200 rounded text-gray-700"
-      on:click={clearFilters}>Clear</button
+    <button class="px-4 py-2 bg-gray-200 rounded text-gray-700" on:click={clearFilters}
+      >Clear</button
     >
-    <button
-      class="px-4 py-2 bg-[var(--color-primary)] text-white rounded"
-      on:click={applyFilters}>Apply</button
+    <button class="px-4 py-2 bg-[var(--color-primary)] text-white rounded" on:click={applyFilters}
+      >Apply</button
     >
   </div>
 </div>

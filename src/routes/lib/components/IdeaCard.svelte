@@ -1,19 +1,59 @@
 <script>
+  import { Heart } from '@lucide/svelte';
+  import { authStore } from '$lib/api/authStore.js';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { addFavorite, removeFavorite } from '$lib/api/idea.js';
+  import { browser } from '$app/environment';
+
   export let idea;
+
+  let isFavorited = idea.isFavorited ?? false;
+  let isTogglingFavorite = false;
+
+  function getToken() {
+    if (!browser) return null;
+    return localStorage.getItem('token');
+  }
+
+  async function toggleFavorite(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!$authStore.isLoggedIn) {
+      goto(`/login?returnUrl=${encodeURIComponent($page.url.pathname)}`);
+      return;
+    }
+
+    const token = getToken();
+    if (!token) return;
+
+    isTogglingFavorite = true;
+
+    try {
+      if (isFavorited) {
+        await removeFavorite(idea.id, token);
+        isFavorited = false;
+        idea.isFavorited = false;
+      } else {
+        await addFavorite(idea.id, token);
+        isFavorited = true;
+        idea.isFavorited = true;
+      }
+    } finally {
+      isTogglingFavorite = false;
+    }
+  }
 </script>
 
-<a href={`/idea/${idea.id}`}>  
+<a href={`/idea/${idea.id}`}>
   <div
     class="bg-white rounded-2xl shadow-md p-5 flex flex-col gap-4 hover:shadow-lg transition-shadow duration-200"
   >
     <!-- Image -->
     {#if idea.image_url}
       <div class="relative">
-        <img
-          src={idea.image_url}
-          alt={idea.title}
-          class="w-full h-40 object-cover rounded-xl"
-        />
+        <img src={idea.image_url} alt={idea.title} class="w-full h-40 object-cover rounded-xl" />
         <!-- Subject badge -->
         <span
           class="absolute top-3 left-3 bg-[var(--color-primary)] text-white text-xs px-3 py-1 rounded-full capitalize"
@@ -22,10 +62,11 @@
         </span>
         <!-- Favorite button -->
         <button
-          class="absolute top-3 right-3 bg-white rounded-full p-2 shadow hover:scale-105 transition"
-          aria-label="Favorite"
+          class="absolute top-3 right-3 bg-white rounded-full p-2 shadow"
+          on:click={toggleFavorite}
+          disabled={isTogglingFavorite}
         >
-          ❤️
+          <Heart class="h-5 w-5 transition {isFavorited ? 'fill-red-500 text-red-500' : ''}" />
         </button>
       </div>
     {/if}
