@@ -9,7 +9,6 @@ We use **ESLint** for code quality and **Prettier** for code formatting. Both ru
 ## Tools
 
 ### ESLint (Code Quality)
-
 - **Purpose:** Catches bugs, enforces best practices, and ensures code consistency
 - **Config file:** `eslint.config.js`
 - **Rules enforced:**
@@ -21,7 +20,6 @@ We use **ESLint** for code quality and **Prettier** for code formatting. Both ru
   - Proper Prettier integration
 
 ### Prettier (Code Formatting)
-
 - **Purpose:** Auto-formats code for consistency (whitespace, line breaks, quotes)
 - **Config file:** `.prettierrc`
 - **Plugins:**
@@ -36,27 +34,21 @@ We use **ESLint** for code quality and **Prettier** for code formatting. Both ru
 ## Running Quality Checks
 
 ### Lint (Check for issues)
-
 ```bash
 npm run lint
 ```
-
 Runs Prettier check followed by ESLint. Reports formatting and code issues.
 
 ### Lint + Fix (Auto-fix issues)
-
 ```bash
 npm run lint:fix
 ```
-
 Automatically fixes ESLint issues (formatting, unused variables, etc.).
 
 ### Format with Prettier
-
 ```bash
 npm run format
 ```
-
 Formats all files including `.svelte` and applies Tailwind class sorting.
 
 ## How It Works
@@ -69,14 +61,14 @@ Formats all files including `.svelte` and applies Tailwind class sorting.
 
 ## Common Issues & Solutions
 
-| Issue                           | Solution                                    |
-| ------------------------------- | ------------------------------------------- |
-| Double quotes instead of single | Run `npm run format`                        |
-| Tailwind classes out of order   | Run `npm run format` (plugin auto-sorts)    |
-| Missing semicolons              | Run `npm run format`                        |
-| Unused imports in `.svelte`     | Remove manually or use ESLint auto-fix      |
-| Svelte syntax errors            | ESLint will report; fix syntax in component |
-| Lines too long (>100 chars)     | Run `npm run format` (Prettier will wrap)   |
+| Issue | Solution |
+|-------|----------|
+| Double quotes instead of single | Run `npm run format` |
+| Tailwind classes out of order | Run `npm run format` (plugin auto-sorts) |
+| Missing semicolons | Run `npm run format` |
+| Unused imports in `.svelte` | Remove manually or use ESLint auto-fix |
+| Svelte syntax errors | ESLint will report; fix syntax in component |
+| Lines too long (>100 chars) | Run `npm run format` (Prettier will wrap) |
 
 ## ESLint Config Breakdown
 
@@ -119,7 +111,6 @@ To update ESLint, Prettier, or plugins:
 ## Questions?
 
 Refer to:
-
 - [ESLint Documentation](https://eslint.org/docs/latest/)
 - [Prettier Documentation](https://prettier.io/docs/en/index.html)
 - [ESLint Svelte Plugin](https://sveltejs.github.io/eslint-plugin-svelte/)
