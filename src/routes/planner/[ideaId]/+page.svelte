@@ -1,6 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import Notification from '../../lib/components/Notification.svelte';
+  import { notify } from "$lib/stores/notifications.js";
   import { listPlans, createPlan, addPlanItem } from "$lib/api/planner.js";
   import { me } from "$lib/api/auth.js"; 
   import { goto } from '$app/navigation';
