@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import { notify } from '$lib/stores/notifications.js';
   import Notification from '../../lib/components/Notification.svelte';
   import { listPlans, createPlan, addPlanItem } from "$lib/api/planner.js";
   import { me } from "$lib/api/auth.js"; 
@@ -183,7 +184,7 @@
       // Refresh plans
       await loadPlans();
       notify({ type: "success", message: "Plan saved successfully!" });
-      goto('/');
+      goto('/dashboard');
     } catch (err) {
       console.error(err);
       notify({ type: "error", message: "Failed to save plan: " + err.message });
