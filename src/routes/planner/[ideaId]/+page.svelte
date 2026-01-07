@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { listPlans, createPlan, addPlanItem } from "$lib/api/planner.js";
   import { me } from "$lib/api/auth.js"; 
+  import { goto } from '$app/navigation';
 
   // ----- State -----
   export let data; // passed from parent
@@ -88,6 +89,16 @@
     return date;
   }
 
+  // Convert JS date -> "YYYY-MM-DD" for MySQL
+  function toMysqlDate(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  // Convert JS date -> "HH:MM:SS" for MySQL
+  function toMysqlTime(d) {
+    return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:00`;
+  }
+
   // ----- Load plans -----
   async function loadPlans() {
     if (!token) return;
@@ -114,7 +125,7 @@
       // 1️⃣ Create plan
       const planData = {
         title: idea.title,
-        date: selectedDateTime.toISOString().slice(0, 10),
+        date: toMysqlDate(selectedDateTime),
         class_name: 'Personal',
         notes: '',
       };
@@ -126,7 +137,9 @@
         idea_id: idea.id,
         custom_title: idea.title,
         custom_description: idea.description,
-        start_time: selectedDateTime.toISOString(),
+        start_time: toMysqlTime(selectedDateTime),
+        end_time: null,
+        location: null
       };
       const planItem = await addPlanItem(plan.id, itemData, token);
       console.log('Plan item added:', planItem);
@@ -134,6 +147,7 @@
       // Refresh plans
       await loadPlans();
       alert('Plan saved successfully!');
+      goto('/');
     } catch (err) {
       console.error(err);
       alert('Failed to save plan: ' + (err.message || err));
