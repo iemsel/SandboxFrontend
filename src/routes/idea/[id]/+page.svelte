@@ -310,13 +310,9 @@
 
           <!-- Action Buttons -->
           <div class="flex flex-wrap gap-3">
-            {#if $authStore.isLoggedIn}
-            <a href={`/planner/${idea.id}`}
-              class="px-4 py-2 rounded bg-[var(--color-primary)] cursor-pointer text-white font-medium hover:bg-[var(--color-primary)] transition-colors"
-            >
+            <button class="px-4 py-2 rounded bg-[var(--color-primary)] cursor-pointer text-white font-medium hover:bg-[var(--color-primary)] transition-colors">
               Plan
-            </a>
-            {/if}
+            </button>
             <button class="px-4 py-2 rounded border border-[var(--color-border)] cursor-pointer font-medium hover:bg-[var(--color-border-light)] transition-colors">
               Find similar
             </button>
