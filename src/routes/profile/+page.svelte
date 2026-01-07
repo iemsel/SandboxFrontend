@@ -2,13 +2,6 @@
   import { authStore } from '$lib/api/authStore';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { onMount } from 'svelte';
-
-  onMount(() => {
-    if (!$authStore.isLoggedIn) {
-      goto(resolve('/login'));
-    }
-  });
 
   // Pre set data untill we connect it to database
   let themes = [
