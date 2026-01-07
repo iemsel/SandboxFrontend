@@ -10,15 +10,65 @@
     }
   });
 
-  // Mock themes for now (no API yet)
+  // Pre set data untill we connect it to database
   let themes = [
-    { id: 1, title: 'Default', equipped: true },
-    { id: 2, title: 'Ocean', equipped: false },
-    { id: 3, title: 'Forest', equipped: false },
-    { id: 4, title: 'Sunset', equipped: false },
+    {
+      id: 1,
+      title: 'Default',
+      equipped: true,
+      colors: {
+        '--color-primary': '#46826b',
+        '--color-primary-light': '#b3f2da',
+        '--color-primary-dark': '#2f5c48',
+        '--color-bg': '#f1f8f4',
+        '--color-border-light': '#e0f2eb',
+      },
+    },
+    {
+      id: 2,
+      title: 'Ocean',
+      equipped: false,
+      colors: {
+        '--color-primary': '#1e3a5f',
+        '--color-primary-light': '#7da6d3',
+        '--color-primary-dark': '#0f1e2f',
+        '--color-bg': '#e6f0fa',
+        '--color-border-light': '#c7e0f5',
+      },
+    },
+    {
+      id: 3,
+      title: 'Forest',
+      equipped: false,
+      colors: {
+        '--color-primary': '#2f5c48',
+        '--color-primary-light': '#b3f2da',
+        '--color-primary-dark': '#1b382b',
+        '--color-bg': '#edf7f1',
+        '--color-border-light': '#d6ece0',
+      },
+    },
+    {
+      id: 4,
+      title: 'Sunset',
+      equipped: false,
+      colors: {
+        '--color-primary': '#ff7f50',
+        '--color-primary-light': '#ffc3a6',
+        '--color-primary-dark': '#b34727',
+        '--color-bg': '#fff5f0',
+        '--color-border-light': '#ffe0d6',
+      },
+    },
   ];
 
-  function equipTheme(theme) {
+  function applyTheme(theme) {
+    // Set each CSS variable on :root
+    for (const [key, value] of Object.entries(theme.colors)) {
+      document.documentElement.style.setProperty(key, value);
+    }
+
+    // Update local equipped state
     themes = themes.map((t) => ({
       ...t,
       equipped: t.id === theme.id,
@@ -60,7 +110,7 @@
     <div class="flex flex-wrap gap-3">
       {#each themes as theme (theme.id)}
         <button
-          on:click={() => equipTheme(theme)}
+          on:click={() => applyTheme(theme)}
           class={`px-4 py-2 rounded text-sm border transition ${
             theme.equipped ? 'ring-2 font-semibold' : 'hover:opacity-80'
           }`}
