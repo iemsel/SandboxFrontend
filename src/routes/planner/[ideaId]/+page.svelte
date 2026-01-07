@@ -11,7 +11,11 @@
   let token = null;
   let user = null;
   let plans = [];
-  let selectedSlot = null; // set by your time grid
+  let selectedSlot = null;      
+  let occupiedSlots = [];     
+  let selectedDateTime = null;   
+  let selectedEndTime = null;   
+
   let selectedGroup = "";
   let inviteChecked = false;
   $: if (!inviteChecked) selectedGroup = "";
@@ -29,18 +33,6 @@
     d.setDate(d.getDate() + i);
     return d;
   });
-
-  // ----- Selected date + time -----
-  $: selectedDateTime = selectedSlot
-    ? new Date(
-        dayDates[selectedSlot.dayIndex].getFullYear(),
-        dayDates[selectedSlot.dayIndex].getMonth(),
-        dayDates[selectedSlot.dayIndex].getDate(),
-        selectedSlot.hourIndex,
-        selectedSlot.minute || 0,
-        0
-      )
-    : null;
 
   // ----- Day array update -----
   let days = [
@@ -60,6 +52,46 @@
                   date.getDate() === today.getDate(),
       };
     });
+  }
+
+  // ----- Reactive slot & time computation -----
+  $: if (selectedSlot && idea?.duration?.max) {
+    // Compute start & end times
+    const start = new Date(
+      dayDates[selectedSlot.dayIndex].getFullYear(),
+      dayDates[selectedSlot.dayIndex].getMonth(),
+      dayDates[selectedSlot.dayIndex].getDate(),
+      selectedSlot.hourIndex,
+      selectedSlot.minute || 0
+    );
+    const end = new Date(start.getTime() + idea.duration.max * 60000);
+
+    selectedDateTime = start;
+    selectedEndTime = end;
+
+    // Compute occupied slots for highlighting
+    const totalMinutes = idea.duration.max;
+    const slotCount = Math.ceil(totalMinutes / 30);
+    const slots = [];
+
+    let currentHour = selectedSlot.hourIndex;
+    let currentMinute = selectedSlot.minute || 0;
+
+    for (let i = 0; i < slotCount; i++) {
+      slots.push({ dayIndex: selectedSlot.dayIndex, hourIndex: currentHour, minute: currentMinute });
+      currentMinute += 30;
+      if (currentMinute >= 60) {
+        currentMinute = 0;
+        currentHour += 1;
+      }
+    }
+
+    occupiedSlots = slots;
+  } else {
+    // Clear if no slot selected
+    selectedDateTime = null;
+    selectedEndTime = null;
+    occupiedSlots = [];
   }
 
   // ----- Week navigation -----
@@ -89,14 +121,17 @@
     return date;
   }
 
-  // Convert JS date -> "YYYY-MM-DD" for MySQL
   function toMysqlDate(d) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
 
-  // Convert JS date -> "HH:MM:SS" for MySQL
   function toMysqlTime(d) {
     return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:00`;
+  }
+
+  // ----- Slot selection -----
+  function selectSlot(dayIndex, hourIndex, minute = 0) {
+    selectedSlot = { dayIndex, hourIndex, minute };
   }
 
   // ----- Load plans -----
@@ -110,7 +145,7 @@
     }
   }
 
-  // ----- Save plan (create plan + add idea item) -----
+  // ----- Save plan -----
   async function savePlan() {
     try {
       if (!token) {
@@ -138,7 +173,7 @@
         custom_title: idea.title,
         custom_description: idea.description,
         start_time: toMysqlTime(selectedDateTime),
-        end_time: null,
+        end_time: toMysqlTime(selectedEndTime),
         location: null
       };
       const planItem = await addPlanItem(plan.id, itemData, token);
@@ -154,10 +189,10 @@
     }
   }
 
-  // ----- On mount: get token, user, load plans -----
+  // ----- On mount -----
   onMount(async () => {
     try {
-      token = localStorage.getItem('token'); // match your auth
+      token = localStorage.getItem('token');
       if (!token) {
         console.warn('No token found. User is not logged in.');
         return;
@@ -255,33 +290,41 @@
 
       <!-- Selected Time Card -->
       {#if selectedDateTime}
-        <div
-          class="mt-6 p-4 rounded-xl border"
-          style="background-color: var(--color-bg); border-color: var(--color-border-light); color: var(--color-text-primary);"
-        >
-          <div class="font-semibold mb-1">Selected Time:</div>
+  <div
+    class="mt-6 p-4 rounded-xl border"
+    style="background-color: var(--color-bg); border-color: var(--color-border-light); color: var(--color-text-primary);"
+  >
+    <div class="font-semibold mb-1">Selected Time:</div>
 
-          <div class="text-xl font-bold">
-            {selectedDateTime.toLocaleDateString("en-US", {
-              weekday: "short",
-              day: "numeric",
-              month: "long",
-            })}
-          </div>
+    <!-- Start Date & Time -->
+    <div class="text-xl font-bold">
+      {selectedDateTime.toLocaleDateString("en-US", {
+        weekday: "short",
+        day: "numeric",
+        month: "long",
+      })}
+    </div>
 
-          <div class="text-lg mb-1">
-            {selectedDateTime.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false,
-            })}
-          </div>
+    <div class="text-lg mb-1">
+      {selectedDateTime.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })} 
+      – 
+      {selectedEndTime.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })}
+    </div>
 
-          <div class="text-sm" style="color: var(--color-text-secondary);">
-            Week {weekNumber}, {year}
-          </div>
-        </div>
-      {/if}
+    <div class="text-sm" style="color: var(--color-text-secondary);">
+      Week {weekNumber}, {year}
+    </div>
+  </div>
+{/if}
+
     </section>
   </div>
 
@@ -377,42 +420,33 @@
                 role="button"
                 style="border-color: var(--color-border-light);"
               >
+
                 <!-- Top half :00 -->
                 <button
                   class="absolute top-0 left-0 right-0 h-1/2 cursor-pointer"
-                  on:click={() => {
-                    selectedSlot = { dayIndex, hourIndex, minute: 0 };
-                  }}
+                  on:click={() => selectSlot(dayIndex, hourIndex, 0)}
                   aria-label={`Select ${days[dayIndex].label} ${hourIndex}:00`}
-                  style="
-                    background-color: {
-                      selectedSlot &&
-                      selectedSlot.dayIndex === dayIndex &&
-                      selectedSlot.hourIndex === hourIndex &&
-                      selectedSlot.minute === 0
-                        ? 'var(--color-primary-light)'
-                        : 'transparent'
-                    };
-                  "
+                  style:background-color={
+                    occupiedSlots.some(
+                      s => s.dayIndex === dayIndex && s.hourIndex === hourIndex && s.minute === 0
+                    )
+                      ? 'var(--color-primary-light)'
+                      : 'transparent'
+                  }
                 ></button>
 
                 <!-- Bottom half :30 -->
                 <button
                   class="absolute bottom-0 left-0 right-0 h-1/2 cursor-pointer"
-                  on:click={() => {
-                    selectedSlot = { dayIndex, hourIndex, minute: 30 };
-                  }}
-                  aria-label={`Select ${days[dayIndex].label} ${hourIndex}:00`}
-                  style="
-                    background-color: {
-                      selectedSlot &&
-                      selectedSlot.dayIndex === dayIndex &&
-                      selectedSlot.hourIndex === hourIndex &&
-                      selectedSlot.minute === 30
-                        ? 'var(--color-primary-light)'
-                        : 'transparent'
-                    };
-                  "
+                  on:click={() => selectSlot(dayIndex, hourIndex, 30)}
+                  aria-label={`Select ${days[dayIndex].label} ${hourIndex}:30`}
+                  style:background-color={
+                    occupiedSlots.some(
+                      s => s.dayIndex === dayIndex && s.hourIndex === hourIndex && s.minute === 30
+                    )
+                      ? 'var(--color-primary-light)'
+                      : 'transparent'
+                  }
                 ></button>
 
                 <!-- Half-hour divider -->
