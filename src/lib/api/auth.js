@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 
 import { authStore } from '$lib/api/authStore.js';
+import { apiFetch } from './client.js';
 
 export function register({ email, name, password }) {
   return fetch('/auth/register', {
