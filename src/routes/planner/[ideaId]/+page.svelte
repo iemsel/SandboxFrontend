@@ -158,7 +158,7 @@
         return;
       }
 
-      // 1️⃣ Create plan
+      // Create plan
       const planData = {
         title: idea.title,
         date: toMysqlDate(selectedDateTime),
@@ -168,7 +168,7 @@
       const plan = await createPlan(planData, token);
       console.log('Plan created:', plan);
 
-      // 2️⃣ Add idea as plan item
+      // Add idea as plan item
       const itemData = {
         idea_id: idea.id,
         custom_title: idea.title,
