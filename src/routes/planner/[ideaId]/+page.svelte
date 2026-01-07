@@ -151,11 +151,11 @@
   async function savePlan() {
     try {
       if (!token) {
-        alert('You must be logged in to save a plan');
+        notify({ type: "error", message: "You must be logged in to save a plan" });
         return;
       }
       if (!selectedDateTime) {
-        alert('Please select a time slot');
+        notify({ type: "error", message: "Please select a time slot before saving." });
         return;
       }
 
