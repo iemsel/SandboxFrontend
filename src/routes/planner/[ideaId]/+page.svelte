@@ -192,11 +192,12 @@
           class="w-full h-48 rounded-xl flex items-center justify-center text-xl mb-4"
           style="background-color: var(--color-bg); color: var(--color-text-secondary); border: 1px dashed var(--color-border-light);"
         >
-          {#if idea.image}
+          {#if idea.imageUrl}
             <img
-              src={idea.image}
+              src={idea.imageUrl}
               alt={idea.title}
               class="w-full h-full object-cover rounded-xl"
+              on:error={(e) => e.target.src = 'https://picsum.photos/400/300'} 
             />
           {:else}
             Image Placeholder
