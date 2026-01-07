@@ -20,10 +20,22 @@
         '--color-primary': '#46826b',
         '--color-primary-light': '#b3f2da',
         '--color-primary-dark': '#2f5c48',
+
+        '--color-secondary': '#f9edcf',
+        '--color-secondary-light': '#fff4d6',
+        '--color-secondary-dark': '#f7d48f',
+
         '--color-bg': '#f1f8f4',
+        '--color-white': '#ffffff',
+        '--color-border': '#c7e5d9',
         '--color-border-light': '#e0f2eb',
+
+        '--color-text-primary': '#2f5c48',
+        '--color-text-secondary': '#46826b',
+        '--color-text-accent': '#b38600',
       },
     },
+
     {
       id: 2,
       title: 'Ocean',
@@ -32,22 +44,46 @@
         '--color-primary': '#1e3a5f',
         '--color-primary-light': '#7da6d3',
         '--color-primary-dark': '#0f1e2f',
+
+        '--color-secondary': '#cfe4f9',
+        '--color-secondary-light': '#e6f2ff',
+        '--color-secondary-dark': '#9bbfe5',
+
         '--color-bg': '#e6f0fa',
+        '--color-white': '#ffffff',
+        '--color-border': '#b8d3ec',
         '--color-border-light': '#c7e0f5',
+
+        '--color-text-primary': '#0f1e2f',
+        '--color-text-secondary': '#1e3a5f',
+        '--color-text-accent': '#2b6cb0',
       },
     },
+
     {
       id: 3,
-      title: 'Forest',
+      title: 'Dark',
       equipped: false,
       colors: {
-        '--color-primary': '#2f5c48',
-        '--color-primary-light': '#b3f2da',
-        '--color-primary-dark': '#1b382b',
-        '--color-bg': '#edf7f1',
-        '--color-border-light': '#d6ece0',
+        '--color-primary': '#3fa48d',
+        '--color-primary-light': '#7bd8c2',
+        '--color-primary-dark': '#1f5f52',
+
+        '--color-secondary': '#2a2a2a',
+        '--color-secondary-light': '#3a3a3a',
+        '--color-secondary-dark': '#1f1f1f',
+
+        '--color-bg': '#121212',
+        '--color-white': '#1e1e1e',
+        '--color-border': '#2f2f2f',
+        '--color-border-light': '#3a3a3a',
+
+        '--color-text-primary': '#e6f2ee',
+        '--color-text-secondary': '#9fdac7',
+        '--color-text-accent': '#f5c76b',
       },
     },
+
     {
       id: 4,
       title: 'Sunset',
@@ -56,19 +92,30 @@
         '--color-primary': '#ff7f50',
         '--color-primary-light': '#ffc3a6',
         '--color-primary-dark': '#b34727',
+
+        '--color-secondary': '#ffe3d6',
+        '--color-secondary-light': '#fff0e8',
+        '--color-secondary-dark': '#f7b59c',
+
         '--color-bg': '#fff5f0',
+        '--color-white': '#ffffff',
+        '--color-border': '#ffd1c2',
         '--color-border-light': '#ffe0d6',
+
+        '--color-text-primary': '#5a2a1d',
+        '--color-text-secondary': '#b34727',
+        '--color-text-accent': '#d97706',
       },
     },
   ];
 
   function applyTheme(theme) {
-    // Set each CSS variable on :root
     for (const [key, value] of Object.entries(theme.colors)) {
       document.documentElement.style.setProperty(key, value);
     }
 
-    // Update local equipped state
+    localStorage.setItem('theme-id', theme.id);
+
     themes = themes.map((t) => ({
       ...t,
       equipped: t.id === theme.id,

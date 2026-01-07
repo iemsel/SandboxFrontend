@@ -1,21 +1,61 @@
 <script>
-  import "../app.css";
-  import Nav from "./lib/components/Nav.svelte";
-  import { authStore } from "$lib/api/authStore.js";
-  import { getStoredUser } from "$lib/api/auth.js";
-  
+  import '../app.css';
+  import Nav from './lib/components/Nav.svelte';
+  import { authStore } from '$lib/api/authStore.js';
+  import { getStoredUser } from '$lib/api/auth.js';
+  import { onMount } from 'svelte';
+
+  const themes = {
+    1: {
+      /* Default theme colors */
+    },
+    2: {
+      /* Ocean */
+    },
+    3: {
+      /* Dark */
+    },
+    4: {
+      /* Sunset */
+    },
+  };
+
+  function applyTheme(colors) {
+    for (const [key, value] of Object.entries(colors)) {
+      document.documentElement.style.setProperty(key, value);
+    }
+  }
+
+  onMount(() => {
+    const savedThemeId = localStorage.getItem('theme-id');
+    if (!savedThemeId) return;
+
+    const theme = themes[savedThemeId];
+    if (theme) applyTheme(theme);
+  });
+
   let { children } = $props();
 
   // Initialize the store from local storage on application load
   $effect(() => {
     // Check for window to ensure this only runs client-side after initial SSR
     if (typeof window !== 'undefined') {
-        const storedUser = getStoredUser();
-        authStore.initialize(storedUser);
+      const storedUser = getStoredUser();
+      authStore.initialize(storedUser);
     }
   });
-
 </script>
+
+<Nav />
+
+<main class="px-4 py-8 max-w-6xl mx-auto">
+  {@render children?.()}
+</main>
+
+<footer class="p-4 text-center text-gray-600">
+  © {new Date().getFullYear()}
+</footer>
+
 <style global>
   :root {
     /* Primary Colors */
@@ -38,19 +78,10 @@
     /* Text Colors */
     --color-text-primary: #2f5c48;
     --color-text-secondary: #46826b;
-    --color-text-accent: #b38600; 
+    --color-text-accent: #b38600;
   }
 
   :global(body) {
     background-color: var(--color-bg);
   }
 </style>
-<Nav/>
-
-<main class="px-4 py-8 max-w-6xl mx-auto">
-  {@render children?.()}
-</main>
-
-<footer class="p-4 text-center text-gray-600">
-  © {new Date().getFullYear()}
-</footer>
