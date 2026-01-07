@@ -25,6 +25,10 @@
   // Track if we're in questioning phase (need more info before personalizing)
   let isQuestioningPhase = false;
   let conversationHistory = []; // Track full conversation for context
+  let questionCount = 0; // Track number of AI follow-up questions asked
+  
+  // Success message state
+  let showSuccessMessage = false;
 
   // Data from server
   export let data;
@@ -272,6 +276,9 @@
     aiError = "";
 
     try {
+      // Count AI questions in conversation history
+      const aiQuestionCount = conversationHistory.filter(msg => msg.role === 'assistant').length;
+      
       const context = {
         title: idea.title,
         description: idea.description,
@@ -283,7 +290,8 @@
         currentDraft: draftChanges, // Pass current draft for incremental updates
         conversationHistory: conversationHistory.slice(-6), // Last 6 messages for context
         isQuestioningPhase: isQuestioningPhase,
-        isPresetButton: isPresetButton
+        isPresetButton: isPresetButton,
+        questionCount: aiQuestionCount // Pass count of questions asked
       };
 
       const response = await callGemini(prompt, context);
@@ -317,20 +325,173 @@
             // Not a valid personalization JSON, treat as text
             aiMessages = [...aiMessages, { role: 'assistant', content: response }];
             conversationHistory.push({ role: 'assistant', content: response });
-            isQuestioningPhase = true; // Still need more info
+            
+            // Count questions and force personalization after 2 questions
+            questionCount = conversationHistory.filter(msg => msg.role === 'assistant').length;
+            if (questionCount >= 2) {
+              // Force personalization after 2 questions - make another API call immediately
+              isQuestioningPhase = false;
+              // Add a system message to force personalization
+              const personalizationPrompt = "Based on our conversation, please personalize this activity now.";
+              conversationHistory.push({ role: 'user', content: personalizationPrompt });
+              
+              // Make the personalization call
+              const personalizationContext = {
+                title: idea.title,
+                description: idea.description,
+                ageRange: idea.ageRange,
+                weather: idea.weather,
+                duration: idea.duration,
+                tools: idea.tools || [],
+                instructions: idea.instructions || [],
+                currentDraft: draftChanges,
+                conversationHistory: conversationHistory.slice(-8),
+                isQuestioningPhase: false,
+                isPresetButton: false,
+                questionCount: questionCount
+              };
+              
+              try {
+                const personalizationResponse = await callGemini(personalizationPrompt, personalizationContext);
+                const jsonMatch = personalizationResponse.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                  const parsed = JSON.parse(jsonMatch[0]);
+                  if (parsed.tools || parsed.instructions || parsed.description || parsed.title) {
+                    draftChanges = {
+                      tools: parsed.tools !== undefined ? parsed.tools : (draftChanges?.tools || idea.tools),
+                      instructions: parsed.instructions !== undefined ? parsed.instructions : (draftChanges?.instructions || idea.instructions),
+                      description: parsed.description !== undefined ? parsed.description : (draftChanges?.description || idea.description),
+                      title: parsed.title !== undefined ? parsed.title : (draftChanges?.title || idea.title)
+                    };
+                    hasDraftChanges = true;
+                    aiMessages = [...aiMessages, { 
+                      role: 'assistant', 
+                      content: 'I\'ve personalized the activity based on our conversation! Review the changes below. You can continue editing or click "Apply Changes" to save.' 
+                    }];
+                    conversationHistory.push({ role: 'assistant', content: 'Personalization completed' });
+                  }
+                }
+              } catch (err) {
+                console.error("Error in forced personalization:", err);
+              }
+            } else {
+              isQuestioningPhase = true; // Still need more info
+            }
           }
         } else {
           // No JSON found - it's a question or text response
           aiMessages = [...aiMessages, { role: 'assistant', content: response }];
           conversationHistory.push({ role: 'assistant', content: response });
-          isQuestioningPhase = true; // Still in questioning phase
+          
+          // Count questions and force personalization after 2 questions
+          questionCount = conversationHistory.filter(msg => msg.role === 'assistant').length;
+          if (questionCount >= 2) {
+            // Force personalization after 2 questions - make another API call immediately
+            isQuestioningPhase = false;
+            // Add a system message to force personalization
+            const personalizationPrompt = "Based on our conversation, please personalize this activity now.";
+            conversationHistory.push({ role: 'user', content: personalizationPrompt });
+            
+            // Make the personalization call
+            const personalizationContext = {
+              title: idea.title,
+              description: idea.description,
+              ageRange: idea.ageRange,
+              weather: idea.weather,
+              duration: idea.duration,
+              tools: idea.tools || [],
+              instructions: idea.instructions || [],
+              currentDraft: draftChanges,
+              conversationHistory: conversationHistory.slice(-8),
+              isQuestioningPhase: false,
+              isPresetButton: false,
+              questionCount: questionCount
+            };
+            
+            try {
+              const personalizationResponse = await callGemini(personalizationPrompt, personalizationContext);
+              const jsonMatch = personalizationResponse.match(/\{[\s\S]*\}/);
+              if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+                if (parsed.tools || parsed.instructions || parsed.description || parsed.title) {
+                  draftChanges = {
+                    tools: parsed.tools !== undefined ? parsed.tools : (draftChanges?.tools || idea.tools),
+                    instructions: parsed.instructions !== undefined ? parsed.instructions : (draftChanges?.instructions || idea.instructions),
+                    description: parsed.description !== undefined ? parsed.description : (draftChanges?.description || idea.description),
+                    title: parsed.title !== undefined ? parsed.title : (draftChanges?.title || idea.title)
+                  };
+                  hasDraftChanges = true;
+                  aiMessages = [...aiMessages, { 
+                    role: 'assistant', 
+                    content: 'I\'ve personalized the activity based on our conversation! Review the changes below. You can continue editing or click "Apply Changes" to save.' 
+                  }];
+                  conversationHistory.push({ role: 'assistant', content: 'Personalization completed' });
+                }
+              }
+            } catch (err) {
+              console.error("Error in forced personalization:", err);
+            }
+          } else {
+            isQuestioningPhase = true; // Still in questioning phase
+          }
         }
       } catch (parseError) {
         console.error("Error parsing AI response:", parseError);
         // If parsing fails, show the response as a message (likely a question)
         aiMessages = [...aiMessages, { role: 'assistant', content: response }];
         conversationHistory.push({ role: 'assistant', content: response });
-        isQuestioningPhase = true;
+        
+        // Count questions and force personalization after 2 questions
+        questionCount = conversationHistory.filter(msg => msg.role === 'assistant').length;
+        if (questionCount >= 2) {
+          // Force personalization after 2 questions - make another API call immediately
+          isQuestioningPhase = false;
+          // Add a system message to force personalization
+          const personalizationPrompt = "Based on our conversation, please personalize this activity now.";
+          conversationHistory.push({ role: 'user', content: personalizationPrompt });
+          
+          // Make the personalization call
+          const personalizationContext = {
+            title: idea.title,
+            description: idea.description,
+            ageRange: idea.ageRange,
+            weather: idea.weather,
+            duration: idea.duration,
+            tools: idea.tools || [],
+            instructions: idea.instructions || [],
+            currentDraft: draftChanges,
+            conversationHistory: conversationHistory.slice(-8),
+            isQuestioningPhase: false,
+            isPresetButton: false,
+            questionCount: questionCount
+          };
+          
+          try {
+            const personalizationResponse = await callGemini(personalizationPrompt, personalizationContext);
+            const jsonMatch = personalizationResponse.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const parsed = JSON.parse(jsonMatch[0]);
+              if (parsed.tools || parsed.instructions || parsed.description || parsed.title) {
+                draftChanges = {
+                  tools: parsed.tools !== undefined ? parsed.tools : (draftChanges?.tools || idea.tools),
+                  instructions: parsed.instructions !== undefined ? parsed.instructions : (draftChanges?.instructions || idea.instructions),
+                  description: parsed.description !== undefined ? parsed.description : (draftChanges?.description || idea.description),
+                  title: parsed.title !== undefined ? parsed.title : (draftChanges?.title || idea.title)
+                };
+                hasDraftChanges = true;
+                aiMessages = [...aiMessages, { 
+                  role: 'assistant', 
+                  content: 'I\'ve personalized the activity based on our conversation! Review the changes below. You can continue editing or click "Apply Changes" to save.' 
+                }];
+                conversationHistory.push({ role: 'assistant', content: 'Personalization completed' });
+              }
+            }
+          } catch (err) {
+            console.error("Error in forced personalization:", err);
+          }
+        } else {
+          isQuestioningPhase = true;
+        }
       }
     } catch (err) {
       console.error("Error calling Gemini:", err);
@@ -341,6 +502,22 @@
     } finally {
       isAiLoading = false;
     }
+  }
+  
+  // Parse ageRange string to get min_age and max_age
+  function parseAgeRange(ageRange) {
+    if (!ageRange) return { min_age: null, max_age: null };
+    
+    // ageRange format is typically "5–10" or "5-10"
+    const match = ageRange.match(/(\d+)[–-](\d+)/);
+    if (match) {
+      return {
+        min_age: parseInt(match[1], 10),
+        max_age: parseInt(match[2], 10)
+      };
+    }
+    
+    return { min_age: null, max_age: null };
   }
   
   // Apply draft changes - save as new idea
@@ -365,6 +542,10 @@
       const timeMinutes = idea.time_minutes || null;
       const timeLabel = idea.time_label || idea.duration || null;
       
+      // Get min_age and max_age (prefer direct values, fallback to parsing ageRange)
+      const min_age = idea.min_age !== undefined && idea.min_age !== null ? idea.min_age : parseAgeRange(idea.ageRange).min_age;
+      const max_age = idea.max_age !== undefined && idea.max_age !== null ? idea.max_age : parseAgeRange(idea.ageRange).max_age;
+      
       // Prepare materials (tools) as comma-separated string
       const materials = Array.isArray(draftChanges.tools) 
         ? draftChanges.tools.join(', ') 
@@ -375,10 +556,19 @@
         ? draftChanges.instructions 
         : (idea.instructions || []);
       
+      // Make title and description distinguishable from original
+      const personalizedTitle = draftChanges.title 
+        ? `${draftChanges.title} (Personalized)`
+        : `${idea.title} (Personalized)`;
+      
+      const personalizedDescription = draftChanges.description 
+        ? `${draftChanges.description} This is a personalized version adapted to your specific needs.`
+        : `${idea.description} This is a personalized version adapted to your specific needs.`;
+      
       // Create new idea with personalized content
       const newIdea = await createIdea({
-        title: draftChanges.title || `${idea.title} (Personalized)`,
-        description: draftChanges.description || idea.description,
+        title: personalizedTitle,
+        description: personalizedDescription,
         time_minutes: timeMinutes,
         time_label: timeLabel,
         difficulty: idea.difficulty || 'easy',
@@ -388,14 +578,21 @@
         yard_context: idea.yard_context || 'no_green',
         instructions: instructions,
         weather: idea.weather || 'any',
-        min_age: idea.min_age || null,
-        max_age: idea.max_age || null,
+        min_age: min_age,
+        max_age: max_age,
         image_url: idea.imageUrl || idea.image_url || null
       }, token);
       
-      // Redirect to the new idea page
+      // Show success message and clear draft changes
       if (newIdea && newIdea.id) {
-        goto(`/idea/${newIdea.id}`);
+        hasDraftChanges = false;
+        draftChanges = null;
+        showSuccessMessage = true;
+        
+        // Redirect after 2 seconds
+        setTimeout(() => {
+          goto(`/idea/${newIdea.id}`);
+        }, 2000);
       } else {
         aiError = "Failed to create personalized idea. Please try again.";
       }
@@ -414,6 +611,7 @@
     aiMessages = [];
     conversationHistory = [];
     isQuestioningPhase = false;
+    questionCount = 0;
   }
 
   function handleButtonClick(buttonText) {
@@ -422,6 +620,7 @@
       conversationHistory = [];
       draftChanges = null;
       hasDraftChanges = false;
+      questionCount = 0;
     }
     // Always start in questioning phase for preset buttons
     isQuestioningPhase = true;
@@ -848,8 +1047,23 @@
           </div>
         {/if}
 
+        <!-- Success Message -->
+        {#if showSuccessMessage}
+          <div class="pt-6 border-t border-[var(--color-border)]">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">✅</span>
+                <div class="flex-1">
+                  <p class="text-sm text-green-800 font-medium">Personalized idea saved successfully!</p>
+                  <p class="text-xs text-green-600 mt-1">Redirecting to your personalized idea...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        {/if}
+
         <!-- Apply Changes Button -->
-        {#if hasDraftChanges}
+        {#if hasDraftChanges && !showSuccessMessage}
           <div class="pt-6 border-t border-[var(--color-border)]">
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
               <p class="text-sm text-blue-800 font-medium">Personalized changes are ready!</p>

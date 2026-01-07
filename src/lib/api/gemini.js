@@ -54,10 +54,18 @@ export async function callGemini(prompt, context = {}) {
       
       // Determine mode based on context
       const isFirstMessage = !context.conversationHistory || context.conversationHistory.length <= 1;
+      const questionCount = context.questionCount || 0;
+      
+      // Force personalization after 2 questions, even if AI thinks it needs more info
+      const shouldForcePersonalization = questionCount >= 2;
+      
       // For preset buttons on first message, ALWAYS ask questions first
-      // Also stay in questioning phase if we're already there
-      const needsMoreInfo = context.isQuestioningPhase || (context.isPresetButton && isFirstMessage) || 
-                           (context.isPresetButton && !context.currentDraft);
+      // Also stay in questioning phase if we're already there, BUT force personalization after 2 questions
+      const needsMoreInfo = !shouldForcePersonalization && (
+        context.isQuestioningPhase || 
+        (context.isPresetButton && isFirstMessage) || 
+        (context.isPresetButton && !context.currentDraft)
+      );
       
       if (needsMoreInfo) {
         // Question mode - ask for more information
@@ -102,6 +110,9 @@ Examples of good follow-up questions:
 Respond with ONLY a friendly, helpful question (no JSON, just plain text). Do not include any JSON or try to personalize yet.`;
       } else {
         // Personalization mode - return JSON or update existing
+        const forcePersonalizationNote = shouldForcePersonalization ? `
+IMPORTANT: You have already asked ${questionCount} follow-up questions. You MUST now personalize the activity based on the information you have gathered. Do not ask any more questions - use the conversation history to make reasonable assumptions and create a personalized version.` : '';
+        
         fullPrompt = `You are helping personalize an activity idea. Here's the activity:
 Title: ${context.title || 'N/A'}
 Description: ${context.description || 'N/A'}
@@ -118,8 +129,9 @@ ${conversationContext}
 ${draftContext}
 
 User's message: ${prompt}
+${forcePersonalizationNote}
 
-Based on the user's message, ${context.currentDraft ? 'update the existing personalization' : 'create a personalized version'} of this activity. The user can continue editing, so make incremental improvements based on their latest message.
+Based on the user's message and the conversation history, ${context.currentDraft ? 'update the existing personalization' : 'create a personalized version'} of this activity. Use the information from the conversation to make appropriate adaptations. The user can continue editing, so make incremental improvements based on their latest message.
 
 Return your response as a JSON object with the following structure:
 {
