@@ -1,6 +1,6 @@
 import { apiFetch } from './client.js'; // same folder as client.js
 
-const API_PREFIX = '/planner'; // must match the Vite proxy
+const API_PREFIX = '/api/planner'; // must match the Vite proxy
 
 // GET /planner/plans?date=YYYY-MM-DD
 export function listPlans({ date } = {}, token) {
