@@ -19,10 +19,8 @@ export async function load({ params }) {
     imageUrl: raw.image_url,
 
     // normalize
-    tools: raw.materials ? raw.materials.split(',').map(s => s.trim()) : [],
-    instructions: raw.instructions_json
-      ? JSON.parse(raw.instructions_json)
-      : [],
+    tools: raw.materials ? raw.materials.split(',').map((s) => s.trim()) : [],
+    instructions: raw.instructions_json ? JSON.parse(raw.instructions_json) : [],
 
     tags: raw.tags ?? [],
 
@@ -32,12 +30,12 @@ export async function load({ params }) {
       learning: null,
       difficulty: null,
       setup: null,
-      time: null
+      time: null,
     },
 
     subject: raw.subject,
     season: raw.season,
-    yard_context: raw.yard_context
+    yard_context: raw.yard_context,
   };
 
   return { idea };
