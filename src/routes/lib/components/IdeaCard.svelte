@@ -20,13 +20,6 @@
         >
           {idea.subject}
         </span>
-        <!-- Favorite button -->
-        <button
-          class="absolute top-3 right-3 bg-white rounded-full p-2 shadow hover:scale-105 transition"
-          aria-label="Favorite"
-        >
-          ❤️
-        </button>
       </div>
     {/if}
 

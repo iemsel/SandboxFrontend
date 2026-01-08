@@ -36,7 +36,8 @@ export async function apiFetch(path, options = {}) {
       throw new Error(errorBody.error || `Request failed with ${res.status}`);
     }
 
-    if (res.status === 204) return null;
+  // 204 No Content → no JSON
+  if (res.status === 204) return null;
     const text = await res.text();
     if (!text) return null;
     try { return JSON.parse(text); } catch { return text; }

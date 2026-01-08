@@ -3,7 +3,7 @@ import { writable } from 'svelte/store';
 const initialState = {
   isLoggedIn: false,
   user: null,
-  initial: 'U' // Default initial for the avatar
+  initial: 'U', // Default initial for the avatar
 };
 
 function createAuthStore() {
@@ -11,17 +11,17 @@ function createAuthStore() {
 
   return {
     subscribe,
-    
+
     // Function to initialize state from localStorage
     initialize: (storedUser) => {
-        if (storedUser) {
-            const initial = storedUser.name ? storedUser.name.charAt(0).toUpperCase() : 'U';
-            set({
-                isLoggedIn: true,
-                user: storedUser,
-                initial: initial
-            });
-        }
+      if (storedUser) {
+        const initial = storedUser.name ? storedUser.name.charAt(0).toUpperCase() : 'U';
+        set({
+          isLoggedIn: true,
+          user: storedUser,
+          initial: initial,
+        });
+      }
     },
 
     login: (user) => {
@@ -32,7 +32,7 @@ function createAuthStore() {
         initial: initial,
       }));
     },
-    
+
     logout: () => {
       set(initialState);
     },

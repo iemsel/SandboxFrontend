@@ -17,14 +17,13 @@
     }
 </script>
 
-<nav
-    class="w-full text-white px-6 py-4 flex items-center justify-between
-      bg-[linear-gradient(to_right,var(--color-primary),var(--color-primary-light))]"
->
-    <div class="flex items-center gap-2 text-xl font-semibold">
-        <span>🌿</span>
-        <span>Green Clues</span>
-    </div>
+<nav class="w-full text-white px-6 py-4 flex items-center justify-between
+      bg-[linear-gradient(to_right,var(--color-primary),var(--color-primary-light))]">
+	<div class="flex items-center gap-2 text-xl font-semibold">
+		<span>🌿</span>
+		<span>Green Clues</span>
+		<a href="/help" class="bg-[var(--color-text-secondary)] text-[var(--color-bg)] font-bold rounded-full w-6 h-6 flex items-center justify-center" >?</a>
+	</div>
 
     <ul class="flex items-center gap-6">
         <li><a href="/" class="hover:underline">Home</a></li>
@@ -67,6 +66,14 @@
             class="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 text-sm"
         >
             <LayoutDashboard class="w-4 h-4" /> Dashboard
+        </a>
+
+        <a
+            href="/profile"
+            on:click={() => (showDropdown = false)}
+            class="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 text-sm"
+            >
+            <User class="w-4 h-4" /> Profile
         </a>
 
         <button
