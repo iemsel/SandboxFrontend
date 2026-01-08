@@ -56,11 +56,7 @@ export async function changePassword(oldPassword, newPassword) {
     },
     body: JSON.stringify({ oldPassword, newPassword }),
   });
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.error || 'Changing password failed');
-  }
-  return data;
+  return handleResponse(res, 'Password change failed');
 }
 
 export async function resetPasswordRequest(email, newPassword) {
@@ -79,6 +75,19 @@ const contentType = res.headers.get("content-type");
       const text = await res.text();
       console.error("Server returned non-JSON:", text);
       throw new Error(`Server Error: Route not found or Server crashed (HTTP ${res.status})`);
+  }
+}
+
+async function handleResponse(res, fallbackError) {
+  const contentType = res.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || fallbackError);
+    return data;
+  } else {
+    const text = await res.text();
+    // This will now tell you if it's a 404, 500, or 504 error
+    throw new Error(`Server Error (HTTP ${res.status})`);
   }
 }
 

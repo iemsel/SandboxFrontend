@@ -52,7 +52,10 @@
       <span class="tracking-widest">••••••••••••</span>
     </div>
 
-    <button class="text-sm font-medium hover:underline">
+    <button 
+      on:click={() => goto("/change-password")}
+      class="text-sm font-medium text-[var(--color-primary)] hover:underline"
+    >
       Change
     </button>
   </div>
