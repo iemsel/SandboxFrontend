@@ -1,7 +1,8 @@
 <script>
   import { login } from "$lib/api/auth.js";
   import { authStore } from '$lib/api/authStore.js';
-  import { goto } from "$app/navigation"; 
+  import { goto } from "$app/navigation";
+  import { page } from "$app/stores";
   
   let email = "";
   let password = "";
@@ -29,7 +30,14 @@ try {
       localStorage.setItem('user', JSON.stringify(response.user));
       authStore.login(response.user);
       
-      await goto("/dashboard");
+      //Set the cookie
+      // path=/ means the cookie is valid for the entire site
+      //max-age is 28800 seconds = 8 hours
+      document.cookie = `token=${response.token}; path=/; max-age=28800; SameSite=Lax`;
+      
+      // Redirect to returnUrl if provided, otherwise go to home
+      const returnUrl = $page.url.searchParams.get('returnUrl');
+      await goto(returnUrl || "/");
     } else {
       error = "Login failed. Please check your credentials.";
     }

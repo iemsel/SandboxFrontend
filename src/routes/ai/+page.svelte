@@ -202,19 +202,13 @@
           description: cleanDescription,
 
           time_minutes: timeMinutes,
-          time_label: `${timeMinutes} min`,
-
           difficulty: meta.difficulty?.toLowerCase() ?? "easy",
-          season: meta.season?.toLowerCase() ?? "any",
+
           subject: meta.subject?.toLowerCase() ?? "general",
-          weather: meta.weather?.toLowerCase() ?? "any",
-          yard_context: meta.yard ?? "no_green",
+          season: meta.season?.toLowerCase() ?? "any",
+          yard_context: meta.yard ?? "some_green",
 
-          min_age: meta.min_age,
-          max_age: meta.max_age,
-
-          tags: [],
-          categories: [],
+          materials: "",
         };
 
         await createIdea(payload, token);
@@ -229,8 +223,8 @@
         }, 800);
 
       } catch (err) {
-        console.error(err);
-        toastMessage = err.message || "Failed to save idea";
+        console.error("SAVE IDEA ERROR:", err);
+        toastMessage = err?.message || "Failed to save idea";
         toastType = "error";
         showToast = true;
       }
