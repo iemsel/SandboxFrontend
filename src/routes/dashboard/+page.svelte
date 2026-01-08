@@ -34,9 +34,7 @@
   });
 
   function formatDateTime(dt) {
-    return dt.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) +
-           ', ' +
-           dt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    return dt.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
   }
 </script>
 
@@ -61,11 +59,8 @@
             {plan.title}
           </h3>
           <p class="text-sm" style="color: var(--color-text-secondary)">
-            {plan.class_name} · {formatDateTime(plan.start)}
+            {plan.class_name} · {formatDateTime(plan.start)}, {plan.notes}
           </p>
-          {#if plan.notes}
-            <p class="text-sm text-gray-600 mt-1">{plan.notes}</p>
-          {/if}
         </div>
       {/each}
     </div>

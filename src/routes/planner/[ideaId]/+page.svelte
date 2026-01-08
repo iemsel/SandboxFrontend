@@ -189,7 +189,7 @@
         title: idea.title,
         date: toMysqlDate(selectedDateTime),
         class_name: 'Personal',
-        notes: '',
+        notes: toMysqlTime(selectedDateTime),
       };
       const plan = await createPlan(planData, token);
       console.log('Plan created:', plan);
