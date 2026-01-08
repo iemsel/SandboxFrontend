@@ -129,7 +129,7 @@
 			<a
 				class="px-6 py-3 rounded-full font-medium"
 				style="background-color: var(--color-primary-dark); color: var(--color-white)"
-				href="/ideas"
+				href="/"
 			>
 				Explore Ideas
 			</a>
