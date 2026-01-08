@@ -1,5 +1,7 @@
 <script>
   import Toast from "../lib/components/Toast.svelte";
+  import { get } from "svelte/store";
+  import { authStore } from "$lib/api/authStore.js";
   import { marked } from "marked";
   import { createIdea } from "$lib/api/idea";
   import { goto } from "$app/navigation";
@@ -192,7 +194,7 @@
         const meta = parseIdeaMetadata(rawText);
         const timeMinutes = extractTime(rawText);
 
-        const token = localStorage.getItem("greenclues_token");
+        const { token } = get(authStore);
         if (!token) {
           throw new Error("You must be logged in to save ideas.");
         }
@@ -217,14 +219,9 @@
         toastType = "success";
         showToast = true;
 
-        // 🔑 IMPORTANT: refresh ideas page
-        setTimeout(() => {
-          goto("/");
-        }, 800);
-
       } catch (err) {
         console.error("SAVE IDEA ERROR:", err);
-        toastMessage = err?.message || "Failed to save idea";
+        toastMessage = err.message || "Failed to save idea";
         toastType = "error";
         showToast = true;
       }
