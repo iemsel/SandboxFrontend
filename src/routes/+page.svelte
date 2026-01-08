@@ -1,15 +1,10 @@
 <script>
   export let data;
-  import Nav from "./lib/components/Nav.svelte";
   import IdeaCard from "./lib/components/IdeaCard.svelte";
   import SortDropDown from "./lib/components/SortDropDown.svelte";
   import {
     Search,
     Filter,
-    ChevronDown,
-    Heart,
-    Clock,
-    Star,
   } from "@lucide/svelte";
   import FilterPanel from "./lib/components/FilterPanel.svelte";
   import { onMount } from "svelte";
@@ -53,10 +48,7 @@
   let ideas = [...data.ideas];
 
   // Sort
-  let sortBy = null;
   function applySort(sortValue) {
-    sortBy = sortValue;
-
     ideas = [...ideas].sort((a, b) => {
       switch (sortValue) {
         case "name-asc":
@@ -162,10 +154,6 @@
       matchesDuration
     );
   });
-
-  function handleIdeaClick(idea) {
-    console.log("Clicked idea:", idea);
-  }
 </script>
 
 <section class="px-8 py-6">
@@ -203,16 +191,11 @@
       <Filter class="w-4 h-4" />
       Filter
     </button>
-
-    <!-- Add Idea -->
-    <button class="px-4 py-2 bg-[var(--color-primary)] text-white rounded">
-      + Add Idea
-    </button>
   </div>
 
   <!-- Category Tabs -->
   <div class="flex items-center gap-3 mb-8">
-    {#each ["All", "Popular", "Quick and Easy", "Challenge"] as tab}
+    {#each ["All", "Popular", "Quick and Easy", "Challenge"] as tab (tab)}
       <button
         class={`px-4 py-2 rounded ${
           selectedTag === tab
@@ -229,7 +212,7 @@
   <!-- Ideas Grid -->
   {#if filteredIdeas.length > 0}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {#each filteredIdeas as idea}
+      {#each filteredIdeas as idea (idea.id)}
         <IdeaCard {idea} />
       {/each}
     </div>
