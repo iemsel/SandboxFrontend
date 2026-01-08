@@ -194,11 +194,6 @@
         const meta = parseIdeaMetadata(rawText);
         const timeMinutes = extractTime(rawText);
 
-        const { token } = get(authStore);
-        if (!token) {
-          throw new Error("You must be logged in to save ideas.");
-        }
-
         const payload = {
           title: cleanTitle,
           description: cleanDescription,
@@ -213,7 +208,7 @@
           materials: "",
         };
 
-        await createIdea(payload, token);
+        await createIdea(payload);
 
         toastMessage = "Idea saved successfully!";
         toastType = "success";

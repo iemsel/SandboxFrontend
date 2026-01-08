@@ -6,8 +6,7 @@ const BASE_URL = import.meta.env.VITE_PUBLIC_API_URL || 'http://localhost:3010';
  * In SSR: uses absolute URL.
  */
 export async function apiFetch(path, options = {}) {
-  const { method = 'GET', token, body } = options;
-
+  const { method = 'GET', body } = options;
   const isBrowser = typeof window !== 'undefined';
 
   // Browser uses /api prefix for proxy
