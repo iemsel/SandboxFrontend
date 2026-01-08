@@ -35,7 +35,7 @@
 
   function formatDateTime(dt) {
     return dt.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }) +
-           ' ' +
+           ', ' +
            dt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
   }
 </script>
