@@ -18,10 +18,6 @@
   let selectedDateTime = null;   
   let selectedEndTime = null;   
 
-  let selectedGroup = "";
-  let inviteChecked = false;
-  $: if (!inviteChecked) selectedGroup = "";
-
   // ----- Time & week helpers -----
   let currentDate = new Date();
   const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2,"0")}:00`);
@@ -294,26 +290,6 @@
       {:else}
         <div>Loading idea...</div>
       {/if}
-
-      <!-- Invite checkbox -->
-      <label
-        class="font-medium flex items-center gap-2 mb-2"
-        style="color: var(--color-text-primary);"
-      >
-        <input type="checkbox" bind:checked={inviteChecked} /> Invite:
-      </label>
-
-      <!-- Group dropdown -->
-      <select
-        bind:value={selectedGroup}
-        class="border p-2 rounded w-full"
-        disabled={!inviteChecked}
-        style="background-color: var(--color-bg); border-color: var(--color-border); color: var(--color-text-primary);"
-      >
-        <option value="">Select group</option>
-        <option value="family">Family</option>
-        <option value="friends">Friends</option>
-      </select>
 
       <!-- Selected Time Card -->
       {#if selectedDateTime}

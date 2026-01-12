@@ -12,7 +12,7 @@ function createAuthStore() {
 
   return {
     subscribe,
-    
+
     // Function to initialize state from localStorage
     initialize: (storedUser, token) => {
         if (storedUser) {
@@ -35,7 +35,7 @@ function createAuthStore() {
         initial: initial,
       }));
     },
-    
+
     logout: () => {
       set(initialState);
     },
