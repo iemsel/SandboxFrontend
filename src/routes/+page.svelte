@@ -186,9 +186,11 @@
     </div>
 
     <!-- AI -->
+     <a href="/ai">
     <button class="px-4 py-2 bg-[var(--color-primary)] text-white rounded">
       🫧 Generate with AI
     </button>
+    </a>
 
     <!-- Sort -->
     {#if ideas.length}

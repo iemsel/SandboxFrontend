@@ -1,6 +1,7 @@
 <script>
   import "../app.css";
   import Nav from "./lib/components/Nav.svelte";
+  import Notification from './lib/components/Notification.svelte';
   import { authStore } from "$lib/api/authStore.js";
   import { getStoredUser } from "$lib/api/auth.js";
   
@@ -11,7 +12,8 @@
     // Check for window to ensure this only runs client-side after initial SSR
     if (typeof window !== 'undefined') {
         const storedUser = getStoredUser();
-        authStore.initialize(storedUser);
+        const token = localStorage.getItem('token');
+        authStore.initialize(storedUser, token);
     }
   });
 
@@ -50,6 +52,8 @@
 <main class="px-4 py-8 max-w-6xl mx-auto">
   {@render children?.()}
 </main>
+
+<Notification/>
 
 <footer class="p-4 text-center text-gray-600">
   © {new Date().getFullYear()}
