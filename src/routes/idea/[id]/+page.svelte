@@ -887,7 +887,7 @@
                 </div>
               </div>
             {/each}
-          </div>
+          </div>VITE_GEMINI_API_KEY=AIzaSyC0FTzRYYOL3eh1jaB6qBwkkOyBw1lZvkM
         </div>
 
         <!-- RIGHT COLUMN -->
@@ -1136,5 +1136,4 @@
   .z-50 {
     z-index: 50;
   }
-  
 </style>

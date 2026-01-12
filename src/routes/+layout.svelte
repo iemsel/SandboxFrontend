@@ -12,7 +12,8 @@
     // Check for window to ensure this only runs client-side after initial SSR
     if (typeof window !== 'undefined') {
         const storedUser = getStoredUser();
-        authStore.initialize(storedUser);
+        const token = localStorage.getItem('token');
+        authStore.initialize(storedUser, token);
     }
   });
 
