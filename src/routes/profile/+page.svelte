@@ -52,30 +52,30 @@
         '--color-text-accent': '#2b6cb0',
       },
     },
+    // commented out for now
+    // {
+    //   id: 3,
+    //   title: 'Dark',
+    //   equipped: false,
+    //   colors: {
+    //     '--color-primary': '#3fa48d',
+    //     '--color-primary-light': '#7bd8c2',
+    //     '--color-primary-dark': '#1f5f52',
 
-    {
-      id: 3,
-      title: 'Dark',
-      equipped: false,
-      colors: {
-        '--color-primary': '#3fa48d',
-        '--color-primary-light': '#7bd8c2',
-        '--color-primary-dark': '#1f5f52',
+    //     '--color-secondary': '#2a2a2a',
+    //     '--color-secondary-light': '#3a3a3a',
+    //     '--color-secondary-dark': '#1f1f1f',
 
-        '--color-secondary': '#2a2a2a',
-        '--color-secondary-light': '#3a3a3a',
-        '--color-secondary-dark': '#1f1f1f',
+    //     '--color-bg': '#121212',
+    //     '--color-white': '#1e1e1e',
+    //     '--color-border': '#2f2f2f',
+    //     '--color-border-light': '#3a3a3a',
 
-        '--color-bg': '#121212',
-        '--color-white': '#1e1e1e',
-        '--color-border': '#2f2f2f',
-        '--color-border-light': '#3a3a3a',
-
-        '--color-text-primary': '#e6f2ee',
-        '--color-text-secondary': '#9fdac7',
-        '--color-text-accent': '#f5c76b',
-      },
-    },
+    //     '--color-text-primary': '#e6f2ee',
+    //     '--color-text-secondary': '#9fdac7',
+    //     '--color-text-accent': '#f5c76b',
+    //   },
+    // },
 
     {
       id: 4,
@@ -98,6 +98,52 @@
         '--color-text-primary': '#5a2a1d',
         '--color-text-secondary': '#b34727',
         '--color-text-accent': '#d97706',
+      },
+    },
+    {
+      id: 5,
+      title: 'Lavender Mint',
+      equipped: false,
+      colors: {
+        '--color-primary': '#6b5ca5',
+        '--color-primary-light': '#cfc8e8',
+        '--color-primary-dark': '#4a3f73',
+
+        '--color-secondary': '#e6f5ef',
+        '--color-secondary-light': '#f2fbf8',
+        '--color-secondary-dark': '#c9e8dc',
+
+        '--color-bg': '#f7f6fb',
+        '--color-white': '#ffffff',
+        '--color-border': '#ddd8f0',
+        '--color-border-light': '#ebe8f7',
+
+        '--color-text-primary': '#2f2a44',
+        '--color-text-secondary': '#6b5ca5',
+        '--color-text-accent': '#3fa48d',
+      },
+    },
+    {
+      id: 6,
+      title: 'Crimson Rose',
+      equipped: false,
+      colors: {
+        '--color-primary': '#c94848',
+        '--color-primary-light': '#f3b5b5',
+        '--color-primary-dark': '#8f2e2e',
+
+        '--color-secondary': '#fde8e8',
+        '--color-secondary-light': '#fff3f3',
+        '--color-secondary-dark': '#f5bcbc',
+
+        '--color-bg': '#fff5f5',
+        '--color-white': '#ffffff',
+        '--color-border': '#f2caca',
+        '--color-border-light': '#f8dddd',
+
+        '--color-text-primary': '#4a1f1f',
+        '--color-text-secondary': '#8f2e2e',
+        '--color-text-accent': '#b91c1c',
       },
     },
   ];
@@ -140,8 +186,8 @@
       <span class="tracking-widest">••••••••••••</span>
     </div>
 
-    <button 
-      on:click={() => goto("/change-password")}
+    <button
+      on:click={() => goto('/change-password')}
       class="text-sm font-medium text-[var(--color-primary)] hover:underline"
     >
       Change
