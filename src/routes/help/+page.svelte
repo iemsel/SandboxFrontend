@@ -189,16 +189,16 @@
         </h2>
 
         <p>
-          First, click the <strong>idea</strong> from the Ideas page that you want to plan. Then on the page of your chosen idea you click <strong>plan</strong>. 
+          First, click the <strong>idea</strong> from the Ideas page that you want to plan. Then on
+          the page of your chosen idea you click <strong>plan</strong>.
         </p>
 
-        <img
-          src="/help-images/4.1.png"
-          alt="Ideas detail page"
-          class="my-4 rounded shadow"
-        />
+        <img src="/help-images/4.1.png" alt="Ideas detail page" class="my-4 rounded shadow" />
 
-        <p>When you click that this screen will appear, if you click <strong>save</strong> with out selecting a time and date you will see this pop up in the right corner.</p>
+        <p>
+          When you click that this screen will appear, if you click <strong>save</strong> with out selecting
+          a time and date you will see this pop up in the right corner.
+        </p>
 
         <img
           src="/help-images/4.3.png"
@@ -206,31 +206,64 @@
           class="my-4 rounded shadow"
         />
 
-        <p>When you click a time slot it will also apear on the left to show the time and date selected and then you online have to click <strong>save</strong>, it will automaticly select the max time of the idea</p>
+        <p>
+          When you click a time slot it will also apear on the left to show the time and date
+          selected and then you online have to click <strong>save</strong>, it will automaticly
+          select the max time of the idea
+        </p>
 
-        <img
-          src="/help-images/4.4.png"
-          alt="planner time selected"
-          class="my-4 rounded shadow"
-        />
+        <img src="/help-images/4.4.png" alt="planner time selected" class="my-4 rounded shadow" />
+
+        <p>The plan will be shown on the dashboard if created</p>
+
+        <img src="/help-images/4.5.png" alt="planner time selected" class="my-4 rounded shadow" />
+
+        <button
+          class="flex items-center justify-center gap-2 px-6 py-3 rounded-lg
+        bg-[var(--color-primary)]
+        text-white font-semibold
+        hover:bg-[var(--color-primary-dark)] transition"
+          on:click={() => goto(resolve('/dashboard'))}
+        >
+          📊 Go to Dashboard
+        </button>
       </section>
 
       <section id="step_5">
         <h2 class="text-xl font-semibold mb-2" style="color: var(--color-primary-dark);">
           5. How to create an idea using AI
         </h2>
+        <p>Click on the home page on gernerate with AI</p>
+        <img
+          src="/help-images/3.png"
+          alt="Ideas page with sort button"
+          class="my-4 rounded shadow"
+        />
         <p>
-          Add a short explanation or screenshot for this step.
+          Chat with the bot to gernerate the idea and click on save the idea in the bottom of the
+          response
         </p>
+        <img
+          src="/help-images/5.png"
+          alt="Ideas page with sort button"
+          class="my-4 rounded shadow"
+        />
       </section>
 
       <section id="step_6">
         <h2 class="text-xl font-semibold mb-2" style="color: var(--color-primary-dark);">
           6. How to customize/personalize an idea using AI
         </h2>
-        <p>
-          Add a short explanation or screenshot for this step.
-        </p>
+        <p>Press the Button personalize next to plan on the Idea details page</p>
+        <img src="/help-images/4.1.png" alt="Ideas detail page" class="my-4 rounded shadow" />
+        <p>Then this image will appear, asking what you need to have changed</p>
+        <img src="/help-images/6.1.png" alt="personalization page" class="my-4 rounded shadow" />
+        <p>You can chat with this ai to alter the idea, dont forget to click on apply changes</p>
+        <img
+          src="/help-images/6.2.png"
+          alt="personalization page with text"
+          class="my-4 rounded shadow"
+        />
       </section>
 
       <section id="step_7">
@@ -240,11 +273,7 @@
         <p>
           On the ideas details page (so when you have selected an idea) you click the button print
         </p>
-        <img
-          src="/help-images/4.1.png"
-          alt="Ideas details page"
-          class="my-4 rounded shadow"
-        />
+        <img src="/help-images/4.1.png" alt="Ideas details page" class="my-4 rounded shadow" />
       </section>
 
       <section id="step_8">
@@ -252,13 +281,22 @@
           8. How to favourite an idea?
         </h2>
         <p>
-          On the ideas details page on the ideas image there is a heart and if the heart is clicked it turns red and means its favourited.
+          On the ideas details page on the ideas image there is a heart and if the heart is clicked
+          it turns red and means its favourited.
         </p>
-        <img
-          src="/help-images/4.1.png"
-          alt="Ideas details page"
-          class="my-4 rounded shadow"
-        />
+        <img src="/help-images/4.1.png" alt="Ideas details page" class="my-4 rounded shadow" />
+        <p>The Favourited ideas can be found on the dashboard by clicking the button saved ideas</p>
+        <img src="/help-images/8.1.png" alt="saved Ideas  page" class="my-4 rounded shadow" />
+        <img src="/help-images/8.2.png" alt="saved Ideas  page" class="my-4 rounded shadow" />
+        <button
+          class="flex items-center justify-center gap-2 px-6 py-3 rounded-lg
+        bg-[var(--color-primary)]
+        text-white font-semibold
+        hover:bg-[var(--color-primary-dark)] transition"
+          on:click={() => goto(resolve('/dashboard'))}
+        >
+          📊 Go to Dashboard
+        </button>
       </section>
 
       <section id="step_9">
@@ -266,7 +304,8 @@
           9. How to give idea an rating?
         </h2>
         <p>
-          On the ideas details page when you scroll all the way down you can leave a comment with a rating with it.
+          On the ideas details page when you scroll all the way down you can leave a comment with a
+          rating with it.
         </p>
         <img
           src="/help-images/9.1.png"
@@ -274,7 +313,8 @@
           class="my-4 rounded shadow"
         />
         <p>
-          You can just click the amount of stars for the rating and leave an text comment with your reasoning
+          You can just click the amount of stars for the rating and leave an text comment with your
+          reasoning
         </p>
         <img
           src="/help-images/9.2.png"
@@ -288,7 +328,8 @@
           10. How to give idea a comment?
         </h2>
         <p>
-          On the ideas details page when you scroll all the way down you can leave a comment with a rating with it.
+          On the ideas details page when you scroll all the way down you can leave a comment with a
+          rating with it.
         </p>
         <img
           src="/help-images/9.1.png"
@@ -296,91 +337,55 @@
           class="my-4 rounded shadow"
         />
         <p>
-          You can just click the amount of stars for the rating and leave an text comment with your reasoning
+          You can just click the amount of stars for the rating and leave an text comment with your
+          reasoning
         </p>
-        <img
-          src="/help-images/9.2.png"
-          alt="Example making comment"
-          class="my-4 rounded shadow"
-        />
-        <img
-          src="/help-images/9.3.png"
-          alt="Comment made"
-          class="my-4 rounded shadow"
-        />
-        <p>
-          When clicked Submit review people can like and dislike your comment.
-        </p>
+        <img src="/help-images/9.2.png" alt="Example making comment" class="my-4 rounded shadow" />
+        <img src="/help-images/9.3.png" alt="Comment made" class="my-4 rounded shadow" />
+        <p>When clicked Submit review people can like and dislike your comment.</p>
       </section>
-       
+
       <section id="step_11">
         <h2 class="text-xl font-semibold mb-2" style="color: var(--color-primary-dark);">
           11. How to change color scheme?
         </h2>
         <p>
-          When you click right top of you screen on your user a dropdown will apear and then you need to click <strong>Profile</strong>.
+          When you click right top of you screen on your user a dropdown will apear and then you
+          need to click <strong>Profile</strong>.
         </p>
-        <img
-          src="/help-images/11.1.png"
-          alt="Location profile page"
-          class="my-4 rounded shadow"
-        />
+        <img src="/help-images/11.1.png" alt="Location profile page" class="my-4 rounded shadow" />
         <p>
-          On the profile page you can just click different theme that you might like in the theme selection.
+          On the profile page you can just click different theme that you might like in the theme
+          selection.
         </p>
-        <img
-          src="/help-images/11.2.png"
-          alt="Example profile page"
-          class="my-4 rounded shadow"
-        />
-        <img
-          src="/help-images/11.3.png"
-          alt="new theme selected"
-          class="my-4 rounded shadow"
-        />
+        <img src="/help-images/11.2.png" alt="Example profile page" class="my-4 rounded shadow" />
+        <img src="/help-images/11.3.png" alt="new theme selected" class="my-4 rounded shadow" />
       </section>
 
       <section id="step_12">
         <h2 class="text-xl font-semibold mb-2" style="color: var(--color-primary-dark);">
           12. How do i log in
         </h2>
+        <p>On the right side of the navigation bar on the top right it says log in.</p>
+        <img src="/help-images/12-13.png" alt="Location login page" class="my-4 rounded shadow" />
         <p>
-          On the right side of the navigation bar on the top right it says log in.
+          On the log in page you just fill in your information and you get logged in, if you dont
+          have a account you should click sign up at the bottom
         </p>
-        <img
-          src="/help-images/12-13.png"
-          alt="Location login page"
-          class="my-4 rounded shadow"
-        />
-        <p>
-          On the log in page you just fill in your information and you get logged in, if you dont have a account you should click sign up at the bottom
-        </p>
-        <img
-          src="/help-images/12.1.png"
-          alt="login page"
-          class="my-4 rounded shadow"
-        />
+        <img src="/help-images/12.1.png" alt="login page" class="my-4 rounded shadow" />
       </section>
       <section id="step_13">
         <h2 class="text-xl font-semibold mb-2" style="color: var(--color-primary-dark);">
           13. How do i log in
         </h2>
+        <p>On the right side of the navigation bar on the top right it says Sign up.</p>
+        <img src="/help-images/12-13.png" alt="Location login page" class="my-4 rounded shadow" />
         <p>
-          On the right side of the navigation bar on the top right it says Sign up.
+          On the sign up page you just fill in your information and create and account once created
+          you get redirected to login page, if you already have an acount you should click log in at
+          the bottom
         </p>
-        <img
-          src="/help-images/12-13.png"
-          alt="Location login page"
-          class="my-4 rounded shadow"
-        />
-        <p>
-          On the sign up page you just fill in your information and create and account once created you get redirected to login page, if you already have an acount you should click log in at the bottom
-        </p>
-        <img
-          src="/help-images/13.1.png"
-          alt="login page"
-          class="my-4 rounded shadow"
-        />
+        <img src="/help-images/13.1.png" alt="login page" class="my-4 rounded shadow" />
       </section>
 
       <!-- FAQs -->
