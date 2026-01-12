@@ -16,6 +16,10 @@ export async function load({ params }) {
     weather: raw.weather,
     difficulty: raw.difficulty,
     ageRange: `${raw.min_age}–${raw.max_age}`,
+    min_age: raw.min_age,
+    max_age: raw.max_age,
+    time_minutes: raw.time_minutes,
+    time_label: raw.time_label,
     imageUrl: raw.image_url,
 
     // normalize
