@@ -52,7 +52,8 @@
         {
           role: "assistant",
           content: marked.parse(rawText),
-          raw: rawText
+          raw: rawText,
+          saved: false
         }
       ];
     } catch (error) {
@@ -187,12 +188,20 @@
     }
 
     //Saves the generated idea in the home page
-    async function saveIdea(rawText) {
+    async function saveIdea(msg) {
+      if (msg.saved) return;
+
       try {
+        const rawText = msg.raw;
         const cleanTitle = extractTitle(rawText);
         const cleanDescription = stripMarkdown(rawText);
         const meta = parseIdeaMetadata(rawText);
         const timeMinutes = extractTime(rawText);
+
+       const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("You must be logged in to save ideas.");
+        }
 
         const payload = {
           title: cleanTitle,
@@ -208,7 +217,10 @@
           materials: "",
         };
 
-        await createIdea(payload);
+        await createIdea(payload, token);
+
+        msg.saved = true;
+        messages = messages;; // Trigger reactivity
 
         toastMessage = "Idea saved successfully!";
         toastType = "success";
@@ -255,12 +267,17 @@
               {@html msg.content}
             </div>
 
-            <button
-              class="mt-3 text-sm text-[var(--color-primary)] underline"
-              on:click={() => saveIdea(msg.raw)}
-            >
-              Save idea
-            </button>
+              <button
+                class="mt-3 text-sm font-medium transition-colors"
+                class:text-gray-400={msg.saved}
+                class:text-[var(--color-primary)]={!msg.saved}
+                class:underline={!msg.saved}
+               class:cursor-not-allowed={msg.saved}
+                disabled={msg.saved}
+                on:click={() => saveIdea(msg)}
+                >
+                {msg.saved ? "✓ Idea saved" : "Save idea"}
+              </button>
           {:else}
             <p>{msg.content}</p>
           {/if}

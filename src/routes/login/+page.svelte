@@ -28,7 +28,7 @@ try {
       // Store user info in localStorage and update authStore
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
-      authStore.login(response.user);
+      authStore.login(response.user, response.token);
       
       //Set the cookie
       // path=/ means the cookie is valid for the entire site
