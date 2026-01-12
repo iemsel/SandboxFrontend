@@ -21,7 +21,7 @@
   // ----- Time & week helpers -----
   let currentDate = new Date();
   const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2,"0")}:00`);
-
+  $: disablePrevWeek = monday < getMonday(new Date());
   $: monday = getMonday(currentDate);
   $: weekNumber = getISOWeek(currentDate);
   $: year = monday.getFullYear();
@@ -96,11 +96,13 @@
   function nextWeek() {
     currentDate = new Date(currentDate);
     currentDate.setDate(currentDate.getDate() + 7);
+    resetSelectedSlot();
   }
 
   function prevWeek() {
     currentDate = new Date(currentDate);
     currentDate.setDate(currentDate.getDate() - 7);
+    resetSelectedSlot();
   }
 
   // ----- Helper functions -----
@@ -127,8 +129,31 @@
     return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:00`;
   }
 
+  function isPastSlot(dayIndex, hourIndex, minute = 0) {
+    const slotDate = new Date(
+      dayDates[dayIndex].getFullYear(),
+      dayDates[dayIndex].getMonth(),
+      dayDates[dayIndex].getDate(),
+      hourIndex,
+      minute
+    );
+    return slotDate <= new Date();
+  }
+  
+  function resetSelectedSlot() {
+    selectedSlot = null;
+    selectedDateTime = null;
+    selectedEndTime = null;
+    occupiedSlots = [];
+  }
+
   // ----- Slot selection -----
   function selectSlot(dayIndex, hourIndex, minute = 0) {
+    if (isPastSlot(dayIndex, hourIndex, minute)) {
+      notify({ type: 'error', message: 'Cannot select a past time slot.' });
+      return;
+    }
+
     selectedSlot = { dayIndex, hourIndex, minute };
   }
 
@@ -160,7 +185,7 @@
         title: idea.title,
         date: toMysqlDate(selectedDateTime),
         class_name: 'Personal',
-        notes: '',
+        notes: toMysqlTime(selectedDateTime),
       };
       const plan = await createPlan(planData, token);
       console.log('Plan created:', plan);
@@ -323,8 +348,15 @@
         <div class="flex items-center gap-6">
           <button
             on:click={prevWeek}
-            style="color: var(--color-text-secondary);">&lt;</button
+            disabled={disablePrevWeek}
+            style="
+              color: {disablePrevWeek ? '#999' : 'var(--color-text-secondary)'};
+              cursor: {disablePrevWeek ? 'not-allowed' : 'pointer'};
+            "
+            title={disablePrevWeek ? 'Cannot navigate to past weeks' : ''}
           >
+            &lt;
+          </button>
           <div class="text-center">
             <div
               class="font-semibold"
@@ -404,13 +436,19 @@
                   class="absolute top-0 left-0 right-0 h-1/2 cursor-pointer"
                   on:click={() => selectSlot(dayIndex, hourIndex, 0)}
                   aria-label={`Select ${days[dayIndex].label} ${hourIndex}:00`}
-                  style:background-color={
-                    occupiedSlots.some(
-                      s => s.dayIndex === dayIndex && s.hourIndex === hourIndex && s.minute === 0
-                    )
-                      ? 'var(--color-primary-light)'
-                      : 'transparent'
-                  }
+                  style="
+                    background-color: {
+                      occupiedSlots.some(
+                        s => s.dayIndex === dayIndex && s.hourIndex === hourIndex && s.minute === 0
+                      )
+                        ? 'var(--color-primary-light)'
+                        : isPastSlot(dayIndex, hourIndex, 0)
+                        ? '#e0e0e0'
+                        : 'transparent'
+                    };
+                    opacity: {isPastSlot(dayIndex, hourIndex, 0) ? 0.5 : 1};
+                  "
+                  title={isPastSlot(dayIndex, hourIndex, 0) ? 'Past time slot cannot be selected' : ''}
                 ></button>
 
                 <!-- Bottom half :30 -->
@@ -418,13 +456,19 @@
                   class="absolute bottom-0 left-0 right-0 h-1/2 cursor-pointer"
                   on:click={() => selectSlot(dayIndex, hourIndex, 30)}
                   aria-label={`Select ${days[dayIndex].label} ${hourIndex}:30`}
-                  style:background-color={
-                    occupiedSlots.some(
-                      s => s.dayIndex === dayIndex && s.hourIndex === hourIndex && s.minute === 30
-                    )
-                      ? 'var(--color-primary-light)'
-                      : 'transparent'
-                  }
+                  style="
+                    background-color: {
+                      occupiedSlots.some(
+                        s => s.dayIndex === dayIndex && s.hourIndex === hourIndex && s.minute === 30
+                      )
+                        ? 'var(--color-primary-light)'
+                        : isPastSlot(dayIndex, hourIndex, 30)
+                        ? '#e0e0e0'
+                        : 'transparent'
+                    };
+                    opacity: {isPastSlot(dayIndex, hourIndex, 30) ? 0.5 : 1};
+                  "
+                  title={isPastSlot(dayIndex, hourIndex, 30) ? 'Past time slot cannot be selected' : ''}
                 ></button>
 
                 <!-- Half-hour divider -->

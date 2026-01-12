@@ -16,8 +16,14 @@
   function applyTheme(colors) {
     for (const [key, value] of Object.entries(colors)) {
       document.documentElement.style.setProperty(key, value);
+    }};
+$effect(() => {
+    if (typeof window !== 'undefined') {
+      const storedUser = getStoredUser();
+      authStore.initialize(storedUser);
     }
-  }
+  });
+ 
 
   onMount(() => {
     const savedThemeId = localStorage.getItem('theme-id');
@@ -29,12 +35,7 @@
 
   let { children } = $props();
 
-  $effect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = getStoredUser();
-      authStore.initialize(storedUser);
-    }
-  });
+
 </script>
 
 <Nav />

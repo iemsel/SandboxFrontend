@@ -5,6 +5,7 @@
   let email = "";
   let name = "";
   let password = "";
+  let showPassword = false;
   let error = "";
   let isLoading = false;
   let successMessage = "";
@@ -85,6 +86,7 @@
           type="email"
           id="email"
           name="email"
+          autocomplete="email"
           bind:value={email}
           required
           class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
@@ -94,8 +96,9 @@
 
       <div class="mb-6">
         <label for="password" class="block text-sm font-medium mb-2 text-[var(--color-text-secondary)]">Password</label>
+        <div class="relative">
         <input
-          type="password"
+          type={showPassword ? "text" : "password"}
           id="password"
           name="password"
           bind:value={password}
@@ -103,6 +106,27 @@
           class="w-full px-3 py-2 border border-[var(--color-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
           disabled={isLoading}
         />
+<button
+      type="button"
+      class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-black transition-colors"
+      on:click={() => (showPassword = !showPassword)}
+      aria-label={showPassword ? "Hide password" : "Show password"}
+    >
+      {#if showPassword}
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      {:else}
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+          <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+          <path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+          <line x1="2" y1="2" x2="22" y2="22"></line>
+        </svg>
+      {/if}
+    </button>
+        </div>
       </div>
 
       <button

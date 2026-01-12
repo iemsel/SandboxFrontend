@@ -8,6 +8,10 @@ node_modules
 /.svelte-kit
 /build
 
+# Environment variables
+.env
+.env.local
+
 # OS
 .DS_Store
 Thumbs.db
@@ -15,3 +19,6 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Environment variables
+.env.local
