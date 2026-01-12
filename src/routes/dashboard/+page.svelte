@@ -151,12 +151,13 @@
       >
         📝 My Notes
       </button>
-      <button
-        class="w-full shadow p-3 rounded flex items-center gap-2"
-        style="background-color: var(--color-white)"
+      <a
+        href="/dashboard/saved-items"
+        class="w-full shadow p-3 rounded flex items-center gap-2 block"
+        style="background-color: var(--color-white); text-decoration: none; color: inherit;"
       >
         💾 Saved Items
-      </button>
+      </a>
       <button
         class="w-full shadow p-3 rounded flex items-center gap-2"
         style="background-color: var(--color-white)"
