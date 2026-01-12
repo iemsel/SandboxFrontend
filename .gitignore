@@ -18,4 +18,3 @@ vite.config.ts.timestamp-*
 
 # Environment variables
 .env.local
-

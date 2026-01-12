@@ -1,6 +1,7 @@
 <script>
   import "../app.css";
   import Nav from "./lib/components/Nav.svelte";
+  import Notification from './lib/components/Notification.svelte';
   import { authStore } from "$lib/api/authStore.js";
   import { getStoredUser } from "$lib/api/auth.js";
   
@@ -51,6 +52,8 @@
 <main class="px-4 py-8 max-w-6xl mx-auto">
   {@render children?.()}
 </main>
+
+<Notification/>
 
 <footer class="p-4 text-center text-gray-600">
   © {new Date().getFullYear()}
