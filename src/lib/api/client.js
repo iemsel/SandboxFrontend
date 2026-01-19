@@ -1,4 +1,25 @@
-const BASE_URL = import.meta.env.VITE_PUBLIC_API_URL || 'http://localhost:3010';
+const BASE_URL_RAW = import.meta.env.VITE_PUBLIC_API_URL || 'http://localhost:3010';
+
+// Normalize BASE_URL to always have a protocol
+// If it's a production URL without protocol, assume https://
+function normalizeBaseUrl(url) {
+  if (!url) return 'http://localhost:3010';
+  
+  // If it already has a protocol, return as-is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // If it's localhost, use http://
+  if (url.includes('localhost')) {
+    return `http://${url}`;
+  }
+  
+  // Otherwise, assume https:// for production URLs
+  return `https://${url}`;
+}
+
+const BASE_URL = normalizeBaseUrl(BASE_URL_RAW);
 
 /**
  * Wrapper around fetch for browser + SSR.
