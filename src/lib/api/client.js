@@ -2,20 +2,27 @@ const BASE_URL = import.meta.env.VITE_PUBLIC_API_URL || 'http://localhost:3010';
 
 /**
  * Wrapper around fetch for browser + SSR.
- * In browser: uses `/api/...` so Vite proxy works.
+ * In browser: uses `/api/...` so Vite proxy works in dev, or absolute URL in production.
  * In SSR: uses absolute URL.
  */
 export async function apiFetch(path, options = {}) {
   const { method = 'GET', token, body } = options;
 
   const isBrowser = typeof window !== 'undefined';
+  const isProduction = BASE_URL && !BASE_URL.includes('localhost');
 
-  // Browser uses /api prefix for proxy
+  // Browser: use absolute URL in production (Vercel), relative paths in dev (Vite proxy)
   let url;
   if (isBrowser) {
-    // Ensure paths starting with /planner go through proxy
-    url = path.startsWith('/planner') ? path.replace(/^\/planner/, '/api/planner') : path;
+    if (isProduction) {
+      // Production: use absolute URL
+      url = `${BASE_URL}${path}`;
+    } else {
+      // Development: use relative paths for Vite proxy
+      url = path.startsWith('/planner') ? path.replace(/^\/planner/, '/api/planner') : path;
+    }
   } else {
+    // SSR: always use absolute URL
     url = `${BASE_URL}${path}`;
   }
 
