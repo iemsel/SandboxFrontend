@@ -1,5 +1,37 @@
 import { getIdeaById } from '$lib/api/idea.js';
 
+function normalizeInstructions(raw) {
+  // Prefer `raw.instructions` if present, otherwise fall back to `raw.instructions_json`
+  const value = raw?.instructions ?? raw?.instructions_json;
+
+  // Already an array -> perfect
+  if (Array.isArray(value)) return value;
+
+  // Null/undefined -> empty
+  if (value == null) return [];
+
+  // If it’s a string, it might be:
+  // 1) JSON: '["Step 1","Step 2"]'
+  // 2) Plain text: 'Show a simple example...'
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+
+    // Try JSON parse
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) return parsed;
+      // If parsed but not array, wrap it
+      return parsed != null ? [String(parsed)] : [];
+    } catch {
+      // Not JSON -> treat as a single instruction line
+      return trimmed ? [trimmed] : [];
+    }
+  }
+
+  // Anything else (object/number/etc) -> stringify and wrap
+  return [String(value)];
+}
+
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ params }) {
   const raw = await getIdeaById(params.id);
@@ -23,10 +55,8 @@ export async function load({ params }) {
     imageUrl: raw.image_url,
 
     // normalize
-    tools: raw.materials ? raw.materials.split(',').map(s => s.trim()) : [],
-    instructions: raw.instructions
-      ? raw.instructions
-      : (raw.instructions_json ? JSON.parse(raw.instructions_json) : []),
+    tools: raw.materials ? raw.materials.split(',').map((s) => s.trim()).filter(Boolean) : [],
+    instructions: normalizeInstructions(raw),
 
     tags: raw.tags ?? [],
 
@@ -41,18 +71,17 @@ export async function load({ params }) {
   };
 
   // Include comments from the API response
-  // Comments now include userName from the backend
-  const comments = (raw.comments || []).map(comment => ({
+  const comments = (raw.comments || []).map((comment) => ({
     id: comment.id,
     user_id: comment.user_id,
-    name: comment.userName || 'User', // Use userName from backend, fallback to 'User'
+    name: comment.userName || 'User',
     avatar: comment.userName ? comment.userName.charAt(0).toUpperCase() : 'U',
     rating: comment.rating || 0,
-    title: '', // Comments don't have titles in the DB
+    title: '',
     text: comment.text,
     likes: comment.likes || 0,
     dislikes: comment.dislikes || 0,
-    userReaction: comment.userReaction || null, // User's reaction if logged in
+    userReaction: comment.userReaction || null,
     created_at: comment.created_at
   }));
 
